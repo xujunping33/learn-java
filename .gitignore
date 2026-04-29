@@ -1,0 +1,23 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Java build outputs
+*.class
+*.jar
+*.war
+*.ear
+out/
+target/
+build/
+bin/
+
+# Logs
+*.log
+
+# Environment/local settings
+.env
+*.local
+
