@@ -17,7 +17,28 @@ bin/
 # Logs
 *.log
 
+# Maven local repo (sandbox workaround)
+**/.m2/
+
 # Environment/local settings
 .env
 *.local
+
+# Spring Boot profile secrets (Day 180)
+**/application-local.yml
+
+# Local Tomcat install (Day 113+)
+tools/apache-tomcat-*/
+tools/apache-tomcat-*.tar.gz
+
+# Day 138: local tar backups (keep deploy/backups/.gitkeep)
+deploy/backups/*.tar.gz
+
+# Redis local config (Day 139)
+redis/jedis-demo/src/main/resources/redis.properties
+
+oa-demo/src/main/resources/redis.properties
+
+# ssm-social-demo local DB config
+ssm-social-demo/src/main/resources/db.properties
 
