@@ -1,0 +1,30 @@
+spring:
+  profiles:
+    active: dev
+
+# Day 180：类型安全业务配置（可被环境变量覆盖，如 APP_API_DEFAULT_PAGE_SIZE）
+app:
+  api:
+    default-page-size: 20
+    post-detail-cache-ttl-seconds: 120
+  cors:
+    origins: []
+  session:
+    cookie-name: JSESSIONID
+
+server:
+  servlet:
+    session:
+      cookie:
+        name: ${app.session.cookie-name}
+
+# Day 179：Actuator — 仅暴露必要端点（勿 production 下 exposure.include: '*)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+

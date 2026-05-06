@@ -1,0 +1,49 @@
+server:
+  port: 8081
+
+# CORS 示例（本地前端）；留空则不散发全局 CORS
+# app:
+#   cors:
+#     origins:
+#       - http://localhost:5173
+#       - http://127.0.0.1:5173
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/ssm_social?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8}
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:}
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+
+mybatis-plus:
+  mapper-locations: classpath*:mappers/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.mybatis: DEBUG
+    learn.java.bootsocial.mapper: DEBUG
+
+# Day 179：本地开发可展开 health 子项，确认 db 等指示器（勿直接用于公网）
+management:
+  endpoint:
+    health:
+      show-details: always
+
+# Day 178：OpenAPI / Swagger UI（springdoc）
+springdoc:
+  swagger-ui:
+    display-request-duration: true
+  show-actuator: false
+  paths-to-match: /api/**
+

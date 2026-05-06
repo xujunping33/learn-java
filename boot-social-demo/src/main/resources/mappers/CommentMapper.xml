@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="learn.java.bootsocial.mapper.CommentMapper">
+
+    <resultMap id="CommentMap" type="learn.java.bootsocial.model.Comment">
+        <id column="id" property="id"/>
+        <result column="post_id" property="postId"/>
+        <result column="user_id" property="userId"/>
+        <result column="content" property="content"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="author_username" property="authorUsername"/>
+    </resultMap>
+
+    <insert id="insertComment" parameterType="learn.java.bootsocial.model.Comment"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO comments (post_id, user_id, content)
+        VALUES (#{postId}, #{userId}, #{content})
+    </insert>
+
+    <select id="listCommentsByPostId" resultMap="CommentMap">
+        SELECT
+          c.id,
+          c.post_id,
+          c.user_id,
+          c.content,
+          c.created_at,
+          u.username AS author_username
+        FROM comments c
+        JOIN users u ON u.id = c.user_id
+        WHERE c.post_id = #{postId}
+        ORDER BY c.created_at ASC, c.id ASC
+    </select>
+
+</mapper>
