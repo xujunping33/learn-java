@@ -13,12 +13,12 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import learn.java.bootsocial.auth.SessionKeys;
 import learn.java.bootsocial.cache.PostDetailCache;
-import learn.java.bootsocial.cache.PostDetailCache.Peek;
 import learn.java.bootsocial.config.AppProperties;
 import learn.java.bootsocial.config.OpenApiConfiguration;
 import learn.java.bootsocial.model.Comment;
 import learn.java.bootsocial.model.Post;
 import learn.java.bootsocial.service.CommentService;
+import learn.java.bootsocial.service.PostDetailService;
 import learn.java.bootsocial.service.PostLikeService;
 import learn.java.bootsocial.service.PostService;
 import learn.java.bootsocial.web.dto.ApiResult;
@@ -28,7 +28,6 @@ import learn.java.bootsocial.web.dto.CreatePostRequest;
 import learn.java.bootsocial.web.dto.PageResult;
 import learn.java.bootsocial.web.dto.PostDetailResponse;
 import learn.java.bootsocial.web.dto.PostResponse;
-import learn.java.bootsocial.web.exception.BizException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -55,19 +54,19 @@ public class PostController {
     private final CommentService commentService;
     private final PostLikeService postLikeService;
     private final AppProperties appProperties;
-    private final PostDetailCache postDetailCache;
+    private final PostDetailService postDetailService;
 
     public PostController(
             PostService postService,
             CommentService commentService,
             PostLikeService postLikeService,
             AppProperties appProperties,
-            PostDetailCache postDetailCache) {
+            PostDetailService postDetailService) {
         this.postService = postService;
         this.commentService = commentService;
         this.postLikeService = postLikeService;
         this.appProperties = appProperties;
-        this.postDetailCache = postDetailCache;
+        this.postDetailService = postDetailService;
     }
 
     @Operation(
@@ -179,36 +178,7 @@ public class PostController {
             responses = {@ApiResponse(responseCode = "200"), @ApiResponse(responseCode = "404")})
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiResult<PostDetailResponse> detail(@Parameter(description = "帖子 id") @PathVariable("id") long id) {
-        return switch (postDetailCache.peek(id)) {
-            case Peek.Hit(var body) -> ApiResult.ok(body);
-            case Peek.AbsentMarker() -> {
-                throw new BizException(HttpStatus.NOT_FOUND, "NOT_FOUND", "post not found");
-            }
-            case Peek.Miss() -> ApiResult.ok(loadAndCacheDetail(id));
-        };
-    }
-
-    private PostDetailResponse loadAndCacheDetail(long id) {
-        Post p = postService.getPostDetail(id);
-        if (p == null) {
-            postDetailCache.putAbsent(id);
-            throw new BizException(HttpStatus.NOT_FOUND, "NOT_FOUND", "post not found");
-        }
-        List<CommentResponse> comments =
-                commentService.listByPostId(id).stream().map(PostController::toCommentResponse).toList();
-        long likeCount = longOrZero(p.getLikeCount());
-        PostDetailResponse resp =
-                new PostDetailResponse(
-                        longOrZero(p.getId()),
-                        longOrZero(p.getUserId()),
-                        p.getAuthorUsername(),
-                        likeCount,
-                        p.getTitle(),
-                        p.getContent(),
-                        p.getCreatedAt(),
-                        comments);
-        postDetailCache.put(id, resp);
-        return resp;
+        return ApiResult.ok(postDetailService.get(id));
     }
 
     private static PostResponse toPostResponse(Post p) {

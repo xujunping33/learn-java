@@ -10,6 +10,12 @@ Spring Boot 3（JDK 21）小型社交 API 示例：注册/登录（Session）、
 ![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)
 ```
 
+**W28 baseline（准备进入 W29）**：
+- **CI**：Actions 绿（`mvn verify`）
+- **Compose**：`docker compose up -d --build` 可起
+- **健康检查**：`curl http://127.0.0.1/health` 返回 Actuator JSON
+- **冒烟**：`BASE=http://127.0.0.1:<APP_PORT> ./smoke-boot-social.sh` 通过
+
 ## 前置条件
 
 - JDK 21、Maven 3.9+

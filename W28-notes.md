@@ -68,6 +68,22 @@
 
 ---
 
+## Day 195：重构升级（服务层收敛）
+
+- 将 `GET /api/posts/{id}` 的“缓存三态 + 回源聚合 + 回填缓存”从 `PostController` 下沉到 `PostDetailService`，Controller 仅做 HTTP 包装。
+- 行为不变：仍支持 `__NULL__` 负缓存与 404 语义；冒烟 `smoke-boot-social.sh` 全通过。
+
+---
+
+## Day 196：协作收口（PR 模板 + baseline）
+
+- PR 模板：
+  - `.github/pull_request_template.md`
+  - `docs/pr-template.md`
+- baseline（进入 W29 前）：CI 绿、compose 可起、`/health` OK、`smoke-boot-social.sh` OK。
+
+---
+
 ## Day 190：全链路验证（备忘）
 
 ```bash

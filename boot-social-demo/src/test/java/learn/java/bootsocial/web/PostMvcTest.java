@@ -13,13 +13,13 @@ import java.util.Collections;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import learn.java.bootsocial.cache.PostDetailCache;
-import learn.java.bootsocial.cache.PostDetailCache.Peek;
 import learn.java.bootsocial.auth.SessionKeys;
 import learn.java.bootsocial.config.AppProperties;
 import learn.java.bootsocial.config.AuthInterceptor;
 import learn.java.bootsocial.config.DevWebConfig;
 import learn.java.bootsocial.model.Post;
 import learn.java.bootsocial.service.CommentService;
+import learn.java.bootsocial.service.PostDetailService;
 import learn.java.bootsocial.service.PostLikeService;
 import learn.java.bootsocial.service.PostService;
 import learn.java.bootsocial.web.dto.PostDetailResponse;
@@ -56,6 +56,9 @@ class PostMvcTest {
 
     @MockitoBean
     private PostDetailCache postDetailCache;
+
+    @MockitoBean
+    private PostDetailService postDetailService;
 
     @Test
     void createPostWithoutSessionReturns401() throws Exception {
@@ -126,7 +129,9 @@ class PostMvcTest {
 
     @Test
     void detailWhenNegativeCacheAbsent_returns404WithoutDbRoundTrip() throws Exception {
-        when(postDetailCache.peek(42L)).thenReturn(Peek.ABSENT);
+        when(postDetailService.get(42L))
+                .thenThrow(new learn.java.bootsocial.web.exception.BizException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "NOT_FOUND", "post not found"));
 
         mockMvc.perform(get("/api/posts/42"))
                 .andExpect(status().isNotFound())
@@ -148,7 +153,7 @@ class PostMvcTest {
                         "body",
                         "2026-05-07T08:00:00",
                         Collections.emptyList());
-        when(postDetailCache.peek(1L)).thenReturn(new Peek.Hit(body));
+        when(postDetailService.get(1L)).thenReturn(body);
 
         mockMvc.perform(get("/api/posts/1"))
                 .andExpect(status().isOk())
