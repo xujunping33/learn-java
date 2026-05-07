@@ -7,6 +7,7 @@ app:
   api:
     default-page-size: 20
     post-detail-cache-ttl-seconds: 120
+    post-detail-absent-cache-ttl-seconds: 30
   cors:
     origins: []
   session:

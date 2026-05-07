@@ -22,6 +22,8 @@
         <mybatis-plus.version>3.5.11</mybatis-plus.version>
         <!-- Spring Boot 3.5.x 需 springdoc 2.8.9+ -->
         <springdoc.version>2.8.13</springdoc.version>
+        <!-- W28：覆盖 Boot 3.5.0 默认 1.21.0 — 新 Docker Engine 要求更高 API，避免 1.32 too old -->
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
 
     <dependencies>

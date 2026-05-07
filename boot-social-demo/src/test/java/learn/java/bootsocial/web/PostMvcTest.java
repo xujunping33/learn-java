@@ -1,5 +1,7 @@
 package learn.java.bootsocial.web;
 
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,6 +13,7 @@ import java.util.Collections;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import learn.java.bootsocial.cache.PostDetailCache;
+import learn.java.bootsocial.cache.PostDetailCache.Peek;
 import learn.java.bootsocial.auth.SessionKeys;
 import learn.java.bootsocial.config.AppProperties;
 import learn.java.bootsocial.config.AuthInterceptor;
@@ -19,6 +22,7 @@ import learn.java.bootsocial.model.Post;
 import learn.java.bootsocial.service.CommentService;
 import learn.java.bootsocial.service.PostLikeService;
 import learn.java.bootsocial.service.PostService;
+import learn.java.bootsocial.web.dto.PostDetailResponse;
 import learn.java.bootsocial.web.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,5 +122,39 @@ class PostMvcTest {
                 .andExpect(status().isOk());
 
         verify(postService).pagePosts(1, 5, null, null);
+    }
+
+    @Test
+    void detailWhenNegativeCacheAbsent_returns404WithoutDbRoundTrip() throws Exception {
+        when(postDetailCache.peek(42L)).thenReturn(Peek.ABSENT);
+
+        mockMvc.perform(get("/api/posts/42"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+
+        verify(postService, never()).getPostDetail(anyLong());
+        verify(commentService, never()).listByPostId(anyLong());
+    }
+
+    @Test
+    void detailWhenCachedHit_returnsOkWithoutDbRoundTrip() throws Exception {
+        PostDetailResponse body =
+                new PostDetailResponse(
+                        1L,
+                        2L,
+                        "u",
+                        0L,
+                        "titled",
+                        "body",
+                        "2026-05-07T08:00:00",
+                        Collections.emptyList());
+        when(postDetailCache.peek(1L)).thenReturn(new Peek.Hit(body));
+
+        mockMvc.perform(get("/api/posts/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("titled"));
+
+        verify(postService, never()).getPostDetail(anyLong());
+        verify(commentService, never()).listByPostId(anyLong());
     }
 }

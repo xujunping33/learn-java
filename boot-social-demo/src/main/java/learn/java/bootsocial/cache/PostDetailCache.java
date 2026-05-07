@@ -16,6 +16,26 @@ import org.springframework.stereotype.Component;
 @Profile({"dev", "docker"})
 public class PostDetailCache {
 
+    /**
+     * 缓存穿透保护：不存在帖子占位（与 JSON body 区分开），TTL 见 {@link AppProperties.Api#getPostDetailAbsentCacheTtlSeconds()}
+     */
+    public static final String NULL_SENTINEL = "__NULL__";
+
+    /** {@link #peek(long)} 三态读取（miss / absent / hit） */
+    public sealed interface Peek permits Peek.AbsentMarker, Peek.Hit, Peek.Miss {
+        /** Redis 未命中 */
+        Miss MISS = new Miss();
+
+        /** 曾查库确认不存在（短 TTL 负缓存），避免连环打 DB */
+        AbsentMarker ABSENT = new AbsentMarker();
+
+        record Miss() implements Peek {}
+
+        record AbsentMarker() implements Peek {}
+
+        record Hit(PostDetailResponse body) implements Peek {}
+    }
+
     private static final Logger log = LoggerFactory.getLogger(PostDetailCache.class);
 
     private final StringRedisTemplate redis;
@@ -32,19 +52,28 @@ public class PostDetailCache {
         return "post:detail:" + postId;
     }
 
-    public PostDetailResponse get(long postId) {
-        String json = redis.opsForValue().get(key(postId));
-        if (json == null || json.isBlank()) {
-            return null;
+    public Peek peek(long postId) {
+        String raw = redis.opsForValue().get(key(postId));
+        if (raw == null || raw.isBlank()) {
+            return Peek.MISS;
+        }
+        if (NULL_SENTINEL.equals(raw)) {
+            return Peek.ABSENT;
         }
         try {
-            return objectMapper.readValue(json, PostDetailResponse.class);
+            PostDetailResponse body = objectMapper.readValue(raw, PostDetailResponse.class);
+            return new Peek.Hit(body);
         } catch (JsonProcessingException ex) {
-            // 反序列化失败：认为缓存脏了，删除后回源 DB
+            // 脏数据：删 key 回源 DB
             log.warn("PostDetail cache corrupted, evicting. postId={}", postId);
             evict(postId);
-            return null;
+            return Peek.MISS;
         }
+    }
+
+    public void putAbsent(long postId) {
+        int ttlSeconds = appProperties.getApi().getPostDetailAbsentCacheTtlSeconds();
+        redis.opsForValue().set(key(postId), NULL_SENTINEL, Duration.ofSeconds(ttlSeconds));
     }
 
     public void put(long postId, PostDetailResponse value) {

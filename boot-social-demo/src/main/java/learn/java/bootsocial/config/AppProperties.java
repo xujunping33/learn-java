@@ -45,6 +45,13 @@ public class AppProperties {
         @Max(3600)
         private int postDetailCacheTtlSeconds = 120;
 
+        /**
+         * 帖子不存在时在 Redis 写入占位 {@code __NULL__} 的 TTL（秒），减轻缓存穿透（W28 Day191）
+         */
+        @Min(1)
+        @Max(600)
+        private int postDetailAbsentCacheTtlSeconds = 30;
+
         public int getDefaultPageSize() {
             return defaultPageSize;
         }
@@ -59,6 +66,14 @@ public class AppProperties {
 
         public void setPostDetailCacheTtlSeconds(int postDetailCacheTtlSeconds) {
             this.postDetailCacheTtlSeconds = postDetailCacheTtlSeconds;
+        }
+
+        public int getPostDetailAbsentCacheTtlSeconds() {
+            return postDetailAbsentCacheTtlSeconds;
+        }
+
+        public void setPostDetailAbsentCacheTtlSeconds(int postDetailAbsentCacheTtlSeconds) {
+            this.postDetailAbsentCacheTtlSeconds = postDetailAbsentCacheTtlSeconds;
         }
     }
 

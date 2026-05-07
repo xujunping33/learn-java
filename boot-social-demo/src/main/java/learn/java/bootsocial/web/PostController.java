@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import learn.java.bootsocial.auth.SessionKeys;
 import learn.java.bootsocial.cache.PostDetailCache;
+import learn.java.bootsocial.cache.PostDetailCache.Peek;
 import learn.java.bootsocial.config.AppProperties;
 import learn.java.bootsocial.config.OpenApiConfiguration;
 import learn.java.bootsocial.model.Comment;
@@ -171,16 +172,26 @@ public class PostController {
     /** 帖子详情：post + comments + likeCount（Day174 聚合） */
     @Operation(
             summary = "帖子详情",
-            description = "`PostDetailResponse`：含嵌套 comments 与 `likeCount`",
+            description =
+                    "`PostDetailResponse`：嵌套 comments 与 likeCount。**不存在**时在 Redis 写短 TTL 占位 `"
+                        + PostDetailCache.NULL_SENTINEL
+                        + "`（穿透保护）；命中占位则直接 404 不打库。配置：`app.api.post-detail-absent-cache-ttl-seconds`。",
             responses = {@ApiResponse(responseCode = "200"), @ApiResponse(responseCode = "404")})
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiResult<PostDetailResponse> detail(@Parameter(description = "帖子 id") @PathVariable("id") long id) {
-        PostDetailResponse cached = postDetailCache.get(id);
-        if (cached != null) {
-            return ApiResult.ok(cached);
-        }
+        return switch (postDetailCache.peek(id)) {
+            case Peek.Hit(var body) -> ApiResult.ok(body);
+            case Peek.AbsentMarker() -> {
+                throw new BizException(HttpStatus.NOT_FOUND, "NOT_FOUND", "post not found");
+            }
+            case Peek.Miss() -> ApiResult.ok(loadAndCacheDetail(id));
+        };
+    }
+
+    private PostDetailResponse loadAndCacheDetail(long id) {
         Post p = postService.getPostDetail(id);
         if (p == null) {
+            postDetailCache.putAbsent(id);
             throw new BizException(HttpStatus.NOT_FOUND, "NOT_FOUND", "post not found");
         }
         List<CommentResponse> comments =
@@ -197,7 +208,7 @@ public class PostController {
                         p.getCreatedAt(),
                         comments);
         postDetailCache.put(id, resp);
-        return ApiResult.ok(resp);
+        return resp;
     }
 
     private static PostResponse toPostResponse(Post p) {
