@@ -9,6 +9,7 @@ import learn.java.bootsocial.web.dto.PostDetailResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -53,34 +54,50 @@ public class PostDetailCache {
     }
 
     public Peek peek(long postId) {
-        String raw = redis.opsForValue().get(key(postId));
-        if (raw == null || raw.isBlank()) {
-            return Peek.MISS;
-        }
-        if (NULL_SENTINEL.equals(raw)) {
-            return Peek.ABSENT;
-        }
         try {
-            PostDetailResponse body = objectMapper.readValue(raw, PostDetailResponse.class);
-            return new Peek.Hit(body);
-        } catch (JsonProcessingException ex) {
-            // 脏数据：删 key 回源 DB
-            log.warn("PostDetail cache corrupted, evicting. postId={}", postId);
-            evict(postId);
+            String raw = redis.opsForValue().get(key(postId));
+            if (raw == null || raw.isBlank()) {
+                return Peek.MISS;
+            }
+            if (NULL_SENTINEL.equals(raw)) {
+                return Peek.ABSENT;
+            }
+            try {
+                PostDetailResponse body = objectMapper.readValue(raw, PostDetailResponse.class);
+                return new Peek.Hit(body);
+            } catch (JsonProcessingException ex) {
+                // 脏数据：删 key 回源 DB
+                log.warn("PostDetail cache corrupted, evicting. postId={}", postId);
+                evict(postId);
+                return Peek.MISS;
+            }
+        } catch (RedisConnectionFailureException ex) {
+            // Redis 不可用：降级为不缓存，不影响主链路
+            log.warn("Redis unavailable, skip PostDetail cache read. postId={}", postId);
             return Peek.MISS;
         }
     }
 
     public void putAbsent(long postId) {
-        int ttlSeconds = appProperties.getApi().getPostDetailAbsentCacheTtlSeconds();
-        redis.opsForValue().set(key(postId), NULL_SENTINEL, Duration.ofSeconds(ttlSeconds));
+        try {
+            int ttlSeconds = appProperties.getApi().getPostDetailAbsentCacheTtlSeconds();
+            redis.opsForValue().set(key(postId), NULL_SENTINEL, Duration.ofSeconds(ttlSeconds));
+        } catch (RedisConnectionFailureException ex) {
+            // Redis 不可用：不写负缓存
+            log.warn("Redis unavailable, skip PostDetail absent marker write. postId={}", postId);
+        }
     }
 
     public void put(long postId, PostDetailResponse value) {
         int ttlSeconds = appProperties.getApi().getPostDetailCacheTtlSeconds();
         try {
             String json = objectMapper.writeValueAsString(value);
-            redis.opsForValue().set(key(postId), json, Duration.ofSeconds(ttlSeconds));
+            try {
+                redis.opsForValue().set(key(postId), json, Duration.ofSeconds(ttlSeconds));
+            } catch (RedisConnectionFailureException ex) {
+                // Redis 不可用：不影响主流程
+                log.warn("Redis unavailable, skip PostDetail cache write. postId={}", postId);
+            }
         } catch (JsonProcessingException ex) {
             // 不影响主流程：只是不缓存
             log.warn("PostDetail cache write failed, skip caching. postId={}", postId, ex);
@@ -88,7 +105,12 @@ public class PostDetailCache {
     }
 
     public void evict(long postId) {
-        redis.delete(key(postId));
+        try {
+            redis.delete(key(postId));
+        } catch (RedisConnectionFailureException ex) {
+            // Redis 不可用：不影响主流程
+            log.warn("Redis unavailable, skip PostDetail cache evict. postId={}", postId);
+        }
     }
 }
 
