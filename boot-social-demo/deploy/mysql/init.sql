@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS posts (
   user_id BIGINT NOT NULL,
   title VARCHAR(200) NOT NULL,
   content TEXT NOT NULL,
+  cover_object_key VARCHAR(255) NULL,
   status TINYINT NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_posts_user_id FOREIGN KEY (user_id) REFERENCES users(id),
@@ -53,4 +54,34 @@ CREATE TABLE IF NOT EXISTS post_likes (
   CONSTRAINT fk_post_likes_user_id FOREIGN KEY (user_id) REFERENCES users(id),
   CONSTRAINT uk_post_likes_post_user UNIQUE (post_id, user_id),
   INDEX idx_post_likes_post (post_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- notifications: async notifications (W29 Day201)
+CREATE TABLE IF NOT EXISTS notifications (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  type VARCHAR(64) NOT NULL,
+  ref_id BIGINT NOT NULL,
+  payload TEXT NULL,
+  dedup_key VARCHAR(128) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uk_notifications_dedup UNIQUE (dedup_key),
+  INDEX idx_notifications_user_created (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- outbox: reliable event publish (W30 Day206)
+CREATE TABLE IF NOT EXISTS outbox_events (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  exchange_name VARCHAR(128) NOT NULL,
+  routing_key VARCHAR(128) NOT NULL,
+  payload_type VARCHAR(255) NOT NULL,
+  payload_json TEXT NOT NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'PENDING',
+  retry_count INT NOT NULL DEFAULT 0,
+  next_retry_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_error VARCHAR(512) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  sent_at DATETIME NULL,
+  INDEX idx_outbox_status_retry (status, next_retry_at),
+  INDEX idx_outbox_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

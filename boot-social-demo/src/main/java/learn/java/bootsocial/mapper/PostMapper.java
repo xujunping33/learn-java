@@ -17,4 +17,6 @@ public interface PostMapper extends BaseMapper<Post> {
             Page<Post> page, @Param("keyword") String keyword, @Param("userId") Long userId);
 
     Post findDetailById(@Param("id") long id);
+
+    int updateCoverObjectKey(@Param("id") long id, @Param("coverObjectKey") String coverObjectKey);
 }

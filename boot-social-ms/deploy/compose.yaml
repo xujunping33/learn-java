@@ -1,0 +1,19 @@
+services:
+  nacos:
+    image: nacos/nacos-server:v2.4.3
+    container_name: boot-social-ms-nacos
+    environment:
+      - MODE=standalone
+      - NACOS_AUTH_ENABLE=false
+      - PREFER_HOST_MODE=hostname
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+
+  sentinel-dashboard:
+    image: bladex/sentinel-dashboard:1.8.8
+    container_name: boot-social-ms-sentinel-dashboard
+    ports:
+      - "8858:8858"
+

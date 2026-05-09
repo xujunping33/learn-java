@@ -24,6 +24,10 @@
         <springdoc.version>2.8.13</springdoc.version>
         <!-- W28：覆盖 Boot 3.5.0 默认 1.21.0 — 新 Docker Engine 要求更高 API，避免 1.32 too old -->
         <testcontainers.version>1.21.4</testcontainers.version>
+        <!-- W29：Sa-Token（Boot3 starter） -->
+        <sa-token.version>1.39.0</sa-token.version>
+        <!-- W31 Day213：AWS SDK v2（S3 兼容 MinIO） -->
+        <aws.sdk.version>2.25.70</aws.sdk.version>
     </properties>
 
     <dependencies>
@@ -68,6 +72,24 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+            <version>${sa-token.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+        <!-- W31 Day213：MinIO（S3 API）+ presigned GET（S3Presigner 随 s3 模块提供） -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.sdk.version}</version>
         </dependency>
 
         <dependency>

@@ -1,0 +1,5 @@
+# 复制为 redis.properties 后按需修改（redis.properties 勿提交带密码的版本）
+redis.host=127.0.0.1
+redis.port=6379
+# 无密码则留空
+redis.password=

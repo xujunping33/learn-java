@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="学生列表 · W15 student-app" />
+    <title>学生列表 · student-app</title>
+    <link rel="stylesheet" href="../../../w13/styles/base.css" />
+    <link rel="stylesheet" href="../../../w13/styles/layout.css" />
+  </head>
+  <body class="site-layout">
+    <header class="site-header">
+      <div class="site-header-inner">
+        <h1>学生列表</h1>
+        <p>逻辑入口：<code>js/studentsApp.js</code> → <code>pages/studentsPage.js</code>（事件委托 + 动态表格）。</p>
+      </div>
+    </header>
+
+    <div class="site-middle">
+      <aside class="site-sidebar" aria-label="侧栏导航">
+        <nav aria-label="主导航">
+          <ul>
+            <li><a href="../index.html">首页</a></li>
+            <li><a href="students.html" class="active" aria-current="page">学生列表</a></li>
+            <li><a href="student-form.html">新增 / 编辑学生</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="site-main">
+        <section aria-labelledby="list-heading">
+          <h2 id="list-heading">全部学生</h2>
+
+          <div class="search-toolbar">
+            <label for="student-search">按姓名搜索</label>
+            <input
+              type="search"
+              id="student-search"
+              name="q"
+              placeholder="输入关键字"
+              autocomplete="off"
+            />
+            <button type="button" id="student-search-btn">搜索</button>
+          </div>
+
+          <div class="sort-toolbar">
+            <span class="sort-toolbar-label">按分数排序：</span>
+            <button type="button" id="sort-score-asc">升序</button>
+            <button type="button" id="sort-score-desc">降序</button>
+          </div>
+
+          <div class="quick-add-toolbar">
+            <span class="quick-add-label">快速添加一行</span>
+            <input type="text" id="quick-name" placeholder="姓名" autocomplete="off" />
+            <input type="number" id="quick-score" placeholder="成绩 0–100" min="0" max="100" step="1" />
+            <input type="number" id="quick-age" placeholder="年龄 1–120" min="1" max="120" step="1" />
+            <button type="button" id="quick-add-btn">添加到表格</button>
+          </div>
+
+          <div class="table-wrap">
+            <table id="student-table">
+              <caption>
+                数据与 w13 / 本应用首页共用 localStorage
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">id</th>
+                  <th scope="col">name</th>
+                  <th scope="col">score</th>
+                  <th scope="col">age</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody id="student-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p><small>W15 Day 105 · student-app</small></p>
+      </div>
+    </footer>
+
+    <script type="module" src="../js/studentsApp.js"></script>
+  </body>
+</html>

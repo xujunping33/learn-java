@@ -1,0 +1,48 @@
+server:
+  port: 9083
+
+spring:
+  application:
+    name: ds-payment-service
+  datasource:
+    url: ${PAYMENT_DB_URL:jdbc:mysql://localhost:3307/ds_payment?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${PAYMENT_DB_USER:root}
+    password: ${PAYMENT_DB_PASSWORD:root}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:${NACOS_ADDR:127.0.0.1:8849}}
+
+dual:
+  rabbit:
+    payment-succeeded:
+      exchange: dual.payment.topic
+      routing-key: payment.succeeded
+      queue: dual.order.payment-succeeded
+
+mybatis:
+  mapper-locations: classpath:/mappers/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+payment:
+  outbox:
+    dispatch-interval-ms: 250
+    batch-size: 50
+    max-retries: 120
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %-5level [%thread] [req=%X{requestId:-}] %logger - %msg%n"
+

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"
+         metadata-complete="false">
+
+  <display-name>servlet-demo</display-name>
+
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <!-- Day125：过滤器链（后续 Day126 继续在下方追加，顺序即链顺序） -->
+  <filter>
+    <filter-name>EncodingFilter</filter-name>
+    <filter-class>learn.java.servlet.filter.EncodingFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>EncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- Day126：链顺序 = 声明顺序；请求先 Encoding → Logging → Auth，响应反向折返 -->
+  <filter>
+    <filter-name>RequestLoggingFilter</filter-name>
+    <filter-class>learn.java.servlet.filter.RequestLoggingFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>RequestLoggingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>SimpleAuthFilter</filter-name>
+    <filter-class>learn.java.servlet.filter.SimpleAuthFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>SimpleAuthFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- Day114：仅 web.xml 映射（与 @WebServlet 对照练习） -->
+  <servlet>
+    <servlet-name>PingServlet</servlet-name>
+    <servlet-class>learn.java.servlet.PingServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PingServlet</servlet-name>
+    <url-pattern>/ping</url-pattern>
+  </servlet-mapping>
+</web-app>

@@ -70,4 +70,13 @@ public class PostService {
         }
         return postMapper.findDetailById(id);
     }
+
+    @Transactional
+    public void updateCoverObjectKey(long postId, String coverObjectKey) {
+        if (postId <= 0) {
+            throw new BizException(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "postId is required");
+        }
+        postMapper.updateCoverObjectKey(postId, coverObjectKey);
+        postDetailCache.evict(postId);
+    }
 }

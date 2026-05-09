@@ -1,0 +1,36 @@
+-- Day51：表设计（字段类型 + 约束 + 命名规范）
+-- 执行方式：在 mysql 里 source 本文件，或 mysql -u xxx -p < sql/day51.sql
+
+USE learn_java;
+
+-- student
+DROP TABLE IF EXISTS student;
+CREATE TABLE student (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
+  score INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_student_name (name)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_0900_ai_ci;
+
+-- employee
+DROP TABLE IF EXISTS employee;
+CREATE TABLE employee (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
+  base_salary DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  dept_id BIGINT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_employee_dept_id (dept_id)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_0900_ai_ci;
+
+SHOW TABLES;
+DESC student;
+DESC employee;
+

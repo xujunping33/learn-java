@@ -94,10 +94,29 @@ curl -sS -c "$COOKIE" -X POST "$BASE/api/auth/register" \
   -H 'Content-Type: application/json' \
   -d "{\"username\":\"$U\",\"password\":\"$P\"}" \
   -o /tmp/smoke_register.json
-python3 -c "import json; d=json.load(open('/tmp/smoke_register.json')); assert d.get('ok')==True, d; print('user id', d['data']['id'])"
+AUTH="$(python3 - <<'PY'
+import json
+d=json.load(open('/tmp/smoke_register.json'))
+assert d.get('ok') is True, d
+data=d.get('data') or {}
+tv=data.get('tokenValue')
+tp=data.get('tokenPrefix') or 'Bearer'
+if tv:
+    print(f"Authorization: {tp} {tv}")
+else:
+    print("")
+PY
+)"
+python3 -c "import json; d=json.load(open('/tmp/smoke_register.json')); assert d.get('ok')==True, d; print('user id', (d.get('data') or {}).get('id'))"
 
 echo "==> create post"
-curl -sS -b "$COOKIE" -X POST "$BASE/api/posts" \
+CREATE_ARGS=()
+if [ -n "${AUTH:-}" ]; then
+  CREATE_ARGS=(-H "$AUTH")
+else
+  CREATE_ARGS=(-b "$COOKIE")
+fi
+curl -sS "${CREATE_ARGS[@]}" -X POST "$BASE/api/posts" \
   -H 'Content-Type: application/json' \
   -d "{\"title\":\"$TITLE\",\"content\":\"$CONTENT\"}" \
   -o /tmp/smoke_post.json
@@ -112,13 +131,13 @@ echo "==> post detail (before comment)"
 curl -sS "$BASE/api/posts/$POST_ID" -o /tmp/smoke_detail1.json
 
 echo "==> add comment"
-curl -sS -b "$COOKIE" -X POST "$BASE/api/posts/$POST_ID/comments" \
+curl -sS "${CREATE_ARGS[@]}" -X POST "$BASE/api/posts/$POST_ID/comments" \
   -H 'Content-Type: application/json' \
   -d "{\"content\":\"$COMMENT\"}" \
   -o /tmp/smoke_comment.json
 
 echo "==> like"
-curl -sS -o /dev/null -w "like HTTP %{http_code}\n" -b "$COOKIE" -X POST "$BASE/api/posts/$POST_ID/like"
+curl -sS -o /dev/null -w "like HTTP %{http_code}\n" "${CREATE_ARGS[@]}" -X POST "$BASE/api/posts/$POST_ID/like"
 
 echo "==> post detail (after comment + like)"
 curl -sS "$BASE/api/posts/$POST_ID" -o /tmp/smoke_detail2.json

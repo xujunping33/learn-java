@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# Minimal Maven Wrapper launcher.
+# It downloads Maven distribution defined in .mvn/wrapper/maven-wrapper.properties
+# and runs it, so you don't need system-wide mvn installed.
+
+set -eu
+
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+WRAPPER_PROPS="$BASE_DIR/.mvn/wrapper/maven-wrapper.properties"
+
+if [ ! -f "$WRAPPER_PROPS" ]; then
+  echo "Missing $WRAPPER_PROPS" >&2
+  exit 1
+fi
+
+DIST_URL="$(grep -E '^distributionUrl=' "$WRAPPER_PROPS" | cut -d= -f2-)"
+if [ -z "${DIST_URL:-}" ]; then
+  echo "distributionUrl not found in $WRAPPER_PROPS" >&2
+  exit 1
+fi
+
+# 默认把 wrapper 缓存放到项目内，避免 HOME 目录权限问题（尤其在受限环境里）
+CACHE_BASE="${M2_HOME:-$BASE_DIR/.mvnw-cache}"
+WRAPPER_DIR="$CACHE_BASE/wrapper"
+ZIP_PATH="$WRAPPER_DIR/maven.zip"
+
+mkdir -p "$WRAPPER_DIR"
+
+if [ ! -f "$ZIP_PATH" ]; then
+  echo "Downloading Maven from $DIST_URL" >&2
+  if command -v curl >/dev/null 2>&1; then
+    curl -fL -o "$ZIP_PATH" "$DIST_URL"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -O "$ZIP_PATH" "$DIST_URL"
+  else
+    echo "Neither curl nor wget found." >&2
+    exit 1
+  fi
+fi
+
+DEST_DIR="$WRAPPER_DIR/apache-maven"
+if [ ! -d "$DEST_DIR" ]; then
+  mkdir -p "$DEST_DIR"
+  unzip -q "$ZIP_PATH" -d "$DEST_DIR"
+fi
+
+MVN_BIN="$(find "$DEST_DIR" -maxdepth 2 -type f -name mvn | head -n 1)"
+if [ -z "${MVN_BIN:-}" ] || [ ! -x "$MVN_BIN" ]; then
+  echo "Maven binary not found after unzip." >&2
+  exit 1
+fi
+
+exec "$MVN_BIN" -f "$BASE_DIR/pom.xml" "$@"
+

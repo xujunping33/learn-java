@@ -33,6 +33,32 @@ docker compose up -d --build
 docker compose logs -f app
 ```
 
+## 2.1 RabbitMQ（W29 Day200）
+
+Compose 里增加了 `rabbitmq:3-management`（带管理后台）。默认端口：
+
+- AMQP：`5672`（应用连接用）
+- 管理后台：`15672`（浏览器）
+
+访问管理后台（默认账号密码来自 `.env` / `.env.example`）：
+
+```bash
+open http://127.0.0.1:15672
+# Linux 无 open 时直接用浏览器访问
+```
+
+## 2.2 MQ 冒烟（dev）
+
+仅 `dev` profile 提供：
+
+```bash
+curl -sS -X POST http://127.0.0.1:8081/api/dev/mq-test \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"hello mq"}'
+```
+
+消费端会打印日志：`mq_test_consume ...`；也可在 RabbitMQ UI 观察 queue。
+
 验收（若 `.env` 里 `APP_PORT` 非 8081，请改端口）：
 
 ```bash

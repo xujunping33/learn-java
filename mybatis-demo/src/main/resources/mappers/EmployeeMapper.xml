@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="learn.java.mybatis.mapper.EmployeeMapper">
+
+    <!--
+      多表 JOIN 时 e.name 与 d.name 列名会冲突，部门列必须起别名，再在 association 里对应。
+    -->
+    <resultMap id="EmployeeWithDeptRM" type="learn.java.mybatis.model.Employee">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="base_salary" property="baseSalary"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <association property="department" javaType="learn.java.mybatis.model.Department">
+            <id column="d_id" property="id"/>
+            <result column="d_name" property="name"/>
+            <result column="d_created_at" property="createdAt"/>
+            <result column="d_updated_at" property="updatedAt"/>
+        </association>
+    </resultMap>
+
+    <select id="selectWithDeptById" parameterType="long" resultMap="EmployeeWithDeptRM">
+        SELECT
+            e.id,
+            e.name,
+            e.base_salary,
+            e.dept_id,
+            e.created_at,
+            e.updated_at,
+            d.id AS d_id,
+            d.name AS d_name,
+            d.created_at AS d_created_at,
+            d.updated_at AS d_updated_at
+        FROM employee e
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.id = #{id}
+    </select>
+
+    <select id="selectByDeptIds" resultType="learn.java.mybatis.model.Employee">
+        SELECT id, name, base_salary, dept_id, created_at, updated_at
+        FROM employee
+        WHERE dept_id IN
+        <foreach collection="deptIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY dept_id ASC, id ASC
+    </select>
+
+</mapper>

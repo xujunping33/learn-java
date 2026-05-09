@@ -12,5 +12,6 @@ public record PostDetailResponse(
         long likeCount,
         String title,
         String content,
+        @Schema(description = "封面短期可访问 URL（presigned GET）；无封面则为 null") String coverUrl,
         String createdAt,
         List<CommentResponse> comments) {}

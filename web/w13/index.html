@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="第 13 周静态练习：首页、学生列表（表格）、新增/编辑表单，统一导航与样式。"
+    />
+    <title>首页 · 学生管理（静态站）</title>
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+  </head>
+  <body class="site-layout">
+    <header class="site-header">
+      <div class="site-header-inner">
+        <h1>学生管理练习站点</h1>
+        <p>W13 周项目：静态「学生管理」三页站点（首页 / 列表 / 表单）。</p>
+      </div>
+    </header>
+
+    <div class="site-middle">
+      <aside class="site-sidebar" aria-label="侧栏导航">
+        <nav aria-label="主导航">
+          <ul>
+            <li><a href="index.html" class="active" aria-current="page">首页</a></li>
+            <li><a href="pages/students.html">学生列表</a></li>
+            <li><a href="pages/student-form.html">新增 / 编辑学生</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main class="site-main">
+        <section class="home-stats" id="home-stats" aria-labelledby="stats-heading">
+          <h2 id="stats-heading">概况</h2>
+          <p class="home-stats-hint">以下数据与「学生列表」「新增学生」共用浏览器 <code>localStorage</code>。</p>
+          <div class="stat-cards">
+            <div class="stat-card">
+              <span class="stat-label">总人数</span>
+              <strong id="stat-count" class="stat-value">—</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">平均分</span>
+              <strong id="stat-avg" class="stat-value">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="intro-heading">
+          <h2 id="intro-heading">简介</h2>
+          <p>
+            本站为第 13 周周项目：语义化 HTML（标题、导航、主内容、页脚）、学生列表表格、带校验的表单，以及
+            统一的 CSS 版式与顶栏 + 侧栏布局。侧栏可切换到列表页与表单页，全程无需构建工具，浏览器直接打开
+            <code>index.html</code> 即可浏览。
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p><small>学生管理静态站 · W15 Day 102（ESM 入口 app.js）</small></p>
+      </div>
+    </footer>
+
+    <script type="module" src="js/esm/app.js"></script>
+  </body>
+</html>

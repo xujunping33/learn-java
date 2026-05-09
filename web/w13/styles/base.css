@@ -1,0 +1,350 @@
+/* 全局：盒模型用 border-box，宽度含 padding/border，布局更直观 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #f4f6f8;
+  --color-surface: #fff;
+  --color-text: #1a1a1a;
+  --color-muted: #5c6670;
+  --color-primary: #1e6bb8;
+  --color-primary-hover: #155a9e;
+  --color-border: #d8dee4;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --space: 1rem;
+  --radius: 6px;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+header,
+main,
+footer {
+  max-width: 52rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space);
+  padding-right: var(--space);
+}
+
+header {
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+  color: var(--color-primary);
+}
+
+header p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+header code {
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+  background: #e8ecf0;
+  border-radius: 4px;
+}
+
+nav {
+  padding: 0.75rem var(--space);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav a {
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+nav a:hover {
+  color: var(--color-primary-hover);
+}
+
+nav a.active,
+nav a[aria-current="page"] {
+  font-weight: 600;
+  border-bottom-color: var(--color-primary);
+}
+
+main {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+main h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+main section > p {
+  margin-top: 0;
+}
+
+footer {
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.search-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.search-toolbar label {
+  display: inline;
+  margin: 0;
+  font-weight: 500;
+}
+
+.search-toolbar input[type="search"] {
+  min-width: 12rem;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.sort-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.sort-toolbar-label {
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.quick-add-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: #eef4fb;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.quick-add-label {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.quick-add-toolbar input[type="text"],
+.quick-add-toolbar input[type="number"] {
+  min-width: 6rem;
+  padding: 0.4rem 0.55rem;
+  font: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.home-stats {
+  margin-bottom: 1.5rem;
+}
+
+.home-stats-hint {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.stat-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.stat-card {
+  flex: 1 1 10rem;
+  padding: var(--space);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+
+/* 表格：外层可横向滚动，窄屏仍可读 */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 0.5rem;
+}
+
+/* 表格 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+caption {
+  padding: 0.75rem var(--space);
+  caption-side: top;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+thead {
+  background: #e8eef5;
+}
+
+th,
+td {
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+th {
+  font-weight: 600;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:nth-child(even) {
+  background: #f0f4f9;
+}
+
+tbody tr:nth-child(odd) {
+  background: var(--color-surface);
+}
+
+/* 按钮：内边距在边框内侧；与外边距 margin 不同，见笔记 */
+button {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.4rem 0.85rem;
+  margin: 0 0.25rem 0.25rem 0;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+button:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+button[type="reset"] {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+button[type="reset"]:hover {
+  background: #eef2f7;
+}
+
+.form-error {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.65rem;
+  color: #b00020;
+  background: #fdecef;
+  border: 1px solid #f5c2c7;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+/* 表单 */
+form {
+  max-width: 24rem;
+  padding: var(--space);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+form p {
+  margin: 0 0 1rem;
+}
+
+form p:last-child {
+  margin-bottom: 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+input:focus {
+  outline: 2px solid rgba(30, 107, 184, 0.35);
+  outline-offset: 1px;
+}

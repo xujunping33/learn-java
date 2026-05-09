@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"
+         metadata-complete="true">
+
+  <display-name>oa-demo</display-name>
+
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <filter>
+    <filter-name>EncodingFilter</filter-name>
+    <filter-class>learn.java.oa.filter.EncodingFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>EncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>RequestLoggingFilter</filter-name>
+    <filter-class>learn.java.oa.filter.RequestLoggingFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>RequestLoggingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>AuthFilter</filter-name>
+    <filter-class>learn.java.oa.filter.AuthFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <servlet>
+    <servlet-name>HealthServlet</servlet-name>
+    <servlet-class>learn.java.oa.servlet.HealthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HealthServlet</servlet-name>
+    <url-pattern>/api/health</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>LoginServlet</servlet-name>
+    <servlet-class>learn.java.oa.servlet.LoginServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LoginServlet</servlet-name>
+    <url-pattern>/api/login</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>LeavesMeServlet</servlet-name>
+    <servlet-class>learn.java.oa.servlet.LeavesMeServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LeavesMeServlet</servlet-name>
+    <url-pattern>/api/leaves/me</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>LeavesPendingServlet</servlet-name>
+    <servlet-class>learn.java.oa.servlet.LeavesPendingServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LeavesPendingServlet</servlet-name>
+    <url-pattern>/api/leaves/pending</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>LeaveSubmitServlet</servlet-name>
+    <servlet-class>learn.java.oa.servlet.LeaveSubmitServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LeaveSubmitServlet</servlet-name>
+    <url-pattern>/api/leaves</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>LeaveDecisionServlet</servlet-name>
+    <servlet-class>learn.java.oa.servlet.LeaveDecisionServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LeaveDecisionServlet</servlet-name>
+    <url-pattern>/api/leaves/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>AdminPingServlet</servlet-name>
+    <servlet-class>learn.java.oa.servlet.AdminPingServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AdminPingServlet</servlet-name>
+    <url-pattern>/api/admin/ping</url-pattern>
+  </servlet-mapping>
+</web-app>

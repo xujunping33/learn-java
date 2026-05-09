@@ -1,0 +1,251 @@
+:root {
+  --bg: #0f1419;
+  --bg-elevated: #1a222c;
+  --text: #e8eef4;
+  --text-muted: #9aa8b4;
+  --accent: #3d9cf5;
+  --accent-hover: #67b4f8;
+  --card-border: #2a3544;
+  --radius: 12px;
+  --nav-h: 4rem;
+  --max: 72rem;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+/* —— 顶栏导航 —— */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--nav-h);
+  padding: 0 1.25rem;
+  background: rgba(15, 20, 25, 0.92);
+  border-bottom: 1px solid var(--card-border);
+  backdrop-filter: blur(8px);
+}
+
+.site-nav__brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.site-nav__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-nav__links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.site-nav__links a:hover {
+  color: var(--text);
+}
+
+/* —— Banner / 主视觉 —— */
+.hero {
+  padding: 3.5rem 1.25rem 4rem;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(61, 156, 245, 0.25), transparent),
+    linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.hero__inner {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.hero__subtitle {
+  margin: 0 0 1.75rem;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+}
+
+/* —— 按钮 —— */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.5rem;
+  font: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: #0a0e12;
+}
+
+.btn--primary:hover {
+  background: var(--accent-hover);
+  color: #0a0e12;
+}
+
+.btn--primary:active {
+  transform: scale(0.98);
+}
+
+/* —— 课程区 —— */
+.section {
+  padding: 2.75rem 1.25rem 3.5rem;
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+.section__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+}
+
+.section__lead {
+  margin: 0 0 1.75rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* 栅格：桌面多列，窄屏单列 */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .site-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.card:hover {
+  border-color: rgba(61, 156, 245, 0.45);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.card__tag {
+  align-self: flex-start;
+  margin-bottom: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: rgba(61, 156, 245, 0.12);
+  border-radius: 4px;
+}
+
+.card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.card p {
+  margin: 0;
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.card__meta {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--card-border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* —— 页脚 —— */
+.site-footer {
+  padding: 2rem 1.25rem;
+  border-top: 1px solid var(--card-border);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 0;
+}

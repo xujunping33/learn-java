@@ -1,0 +1,10 @@
+2026-04-29 10:00:00 INFO start
+2026-04-29 10:00:01 WARN retry connecting
+2026-04-29 10:00:02 ERROR timeout connecting
+2026-04-29 10:00:03 INFO finish
+2026-04-29 10:00:04 WARN retry connecting
+2026-04-29 10:00:05 ERROR timeout connecting
+2026-04-29 10:00:06 INFO start
+2026-04-29 10:00:07 INFO start
+2026-04-29 10:00:08 ERROR timeout connecting
+

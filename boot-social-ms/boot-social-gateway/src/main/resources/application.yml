@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: boot-social-gateway
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://boot-social-user-service
+          predicates:
+            - Path=/api/users/**
+        - id: post-service
+          uri: lb://boot-social-post-service
+          predicates:
+            - Path=/api/posts/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    propagation:
+      type: w3c,b3
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%X{traceId:-}/%X{spanId:-}] [${spring.application.name}] %logger{36} - %msg%n"
+

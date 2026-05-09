@@ -12,6 +12,7 @@ public class Post {
     private Long userId;
     private String title;
     private String content;
+    private String coverObjectKey;
     private String createdAt;
 
     @TableField(exist = false)
@@ -58,6 +59,14 @@ public class Post {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getCoverObjectKey() {
+        return coverObjectKey;
+    }
+
+    public void setCoverObjectKey(String coverObjectKey) {
+        this.coverObjectKey = coverObjectKey;
     }
 
     public String getAuthorUsername() {

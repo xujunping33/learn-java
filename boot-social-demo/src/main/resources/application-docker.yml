@@ -10,6 +10,11 @@ spring:
     redis:
       host: ${REDIS_HOST:redis}
       port: ${REDIS_PORT:6379}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASSWORD:adminpass}
 
 mybatis-plus:
   mapper-locations: classpath*:mappers/*.xml
@@ -36,3 +41,15 @@ springdoc:
   show-actuator: false
   paths-to-match: /api/**
 
+# W31 Day213：MinIO（compose 中 minio 服务；密钥由环境变量注入）
+app:
+  minio:
+    enabled: true
+    endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+    public-endpoint: ${MINIO_PUBLIC_ENDPOINT:http://127.0.0.1:9000}
+    region: ${MINIO_REGION:us-east-1}
+    access-key: ${MINIO_ACCESS_KEY:}
+    secret-key: ${MINIO_SECRET_KEY:}
+    bucket: ${MINIO_BUCKET:boot-social}
+    path-style-access: true
+    presign-get-ttl-seconds: ${MINIO_PRESIGN_GET_TTL_SECONDS:300}

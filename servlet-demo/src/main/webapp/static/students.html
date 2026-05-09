@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>学生列表 · 校验 Day124</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.25rem;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 0.75rem;
+      }
+      th,
+      td {
+        border: 1px solid #cbd5e1;
+        padding: 0.45rem 0.65rem;
+      }
+      th {
+        background: #f1f5f9;
+      }
+      #status {
+        color: #475569;
+      }
+      #status.err {
+        color: #b91c1c;
+      }
+      fieldset {
+        max-width: 24rem;
+        margin-top: 1.25rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+      }
+      label {
+        display: block;
+        margin: 0.35rem 0;
+      }
+      input {
+        width: 100%;
+        max-width: 18rem;
+        box-sizing: border-box;
+      }
+      button {
+        margin-top: 0.5rem;
+        font: inherit;
+        padding: 0.35rem 0.75rem;
+        cursor: pointer;
+      }
+      button.linkish {
+        margin-top: 0;
+        padding: 0.2rem 0.45rem;
+        font-size: 0.85rem;
+      }
+      .hint {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>学生列表</h1>
+    <p id="status">加载中…</p>
+    <table id="tbl" hidden>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>姓名</th>
+          <th>分数</th>
+          <th>年龄</th>
+          <th>手机</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+    <fieldset>
+      <legend>新增学生（POST JSON）</legend>
+      <p class="hint">Day124：前端校验不通过则不发请求；后端仍返回 400 JSON 防绕过。</p>
+      <form id="addForm">
+        <label>姓名（1～20 字符） <input name="name" type="text" value="赵六" required /></label>
+        <label>分数（0～100 整数） <input name="score" type="number" value="85" required /></label>
+        <label>年龄（1～120） <input name="age" type="number" value="20" required /></label>
+        <label>手机（11 位，1[3-9]…） <input name="phone" type="tel" value="13800138000" required /></label>
+        <button type="submit">POST /api/students</button>
+      </form>
+    </fieldset>
+
+    <fieldset>
+      <legend>修改（PUT JSON，body 含 id）</legend>
+      <label>ID <input id="putId" type="number" min="1" step="1" required /></label>
+      <label>姓名 <input id="putName" type="text" /></label>
+      <label>分数 <input id="putScore" type="number" /></label>
+      <label>年龄 <input id="putAge" type="number" /></label>
+      <label>手机 <input id="putPhone" type="tel" /></label>
+      <button type="button" id="putBtn">PUT /api/students</button>
+    </fieldset>
+
+    <p><a href="../index.html">← 返回首页</a></p>
+
+    <script type="module">
+      const RE_NAME = /^[\s\S]{1,20}$/
+      const RE_PHONE = /^1[3-9]\d{9}$/
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+      }
+
+      /** Day124：前端校验（规则与后端 StudentValidation 对齐） */
+      function validateClient({ name, score, age, phone }) {
+        const n = String(name ?? '').trim()
+        if (!n) return '姓名不能为空'
+        if (!RE_NAME.test(n)) return '姓名长度须在 1～20'
+
+        const sc = Number(score)
+        if (!Number.isInteger(sc) || sc < 0 || sc > 100) return '分数须为 0～100 的整数'
+
+        const ag = Number(age)
+        if (!Number.isInteger(ag) || ag < 1 || ag > 120) return '年龄须为 1～120 的整数'
+
+        const p = String(phone ?? '').trim()
+        if (!p) return '手机不能为空'
+        if (!RE_PHONE.test(p)) return '手机须为 11 位大陆号（简化 1[3-9] + 9 位数字）'
+        return null
+      }
+
+      async function parseErrorJson(res) {
+        const text = await res.text()
+        try {
+          const j = text ? JSON.parse(text) : null
+          return j && j.error ? j.error : text || res.statusText
+        } catch {
+          return text || res.statusText
+        }
+      }
+
+      const statusEl = document.getElementById('status')
+      const tbl = document.getElementById('tbl')
+      const tbody = document.getElementById('tbody')
+      const apiUrl = new URL('../api/students', window.location.href).href
+
+      async function load() {
+        statusEl.classList.remove('err')
+        try {
+          const res = await fetch(apiUrl)
+          if (res.status === 401) {
+            statusEl.classList.add('err')
+            statusEl.replaceChildren()
+            statusEl.append('需要登录后才能访问 /api/students：请先 ')
+            const a = document.createElement('a')
+            a.href = new URL('login.html', window.location.href).href
+            a.textContent = '打开登录页'
+            statusEl.appendChild(a)
+            statusEl.append('（POST /api/login，口令 demo）')
+            tbl.hidden = true
+            return
+          }
+          if (!res.ok) {
+            statusEl.classList.add('err')
+            statusEl.textContent = `请求失败：HTTP ${res.status} ${res.statusText}`
+            return
+          }
+          const data = await res.json()
+          if (!Array.isArray(data)) {
+            statusEl.classList.add('err')
+            statusEl.textContent = '响应不是 JSON 数组'
+            return
+          }
+          statusEl.textContent = `加载成功，共 ${data.length} 条`
+          tbody.replaceChildren()
+          for (const row of data) {
+            const tr = document.createElement('tr')
+            const idNum = Number(row.id)
+            const ph = row.phone != null ? escapeHtml(row.phone) : ''
+            tr.innerHTML =
+              `<td>${idNum}</td>` +
+              `<td>${escapeHtml(row.name)}</td>` +
+              `<td>${row.score}</td>` +
+              `<td>${row.age}</td>` +
+              `<td>${ph}</td>` +
+              `<td><button type="button" class="linkish" data-del="${idNum}">删除</button></td>`
+            tbody.appendChild(tr)
+          }
+          tbl.hidden = false
+        } catch (e) {
+          statusEl.classList.add('err')
+          statusEl.textContent = '网络或 JSON 解析异常：' + e
+        }
+      }
+
+      tbody.addEventListener('click', async (ev) => {
+        const btn = ev.target.closest('[data-del]')
+        if (!btn) return
+        const id = btn.getAttribute('data-del')
+        if (!id) return
+        if (!window.confirm(`确定删除 id=${id} ?（DELETE ?id=）`)) return
+        statusEl.classList.remove('err')
+        try {
+          const url = apiUrl + '?id=' + encodeURIComponent(id)
+          const res = await fetch(url, { method: 'DELETE' })
+          if (res.status === 204) {
+            statusEl.textContent = `已删除 id=${id}（HTTP 204）`
+            await load()
+            return
+          }
+          if (res.status === 401) {
+            statusEl.classList.add('err')
+            statusEl.textContent =
+              '未登录：请打开 login.html 执行 POST /api/login（口令 demo）'
+            return
+          }
+          statusEl.classList.add('err')
+          statusEl.textContent = `删除失败：HTTP ${res.status} — ${await parseErrorJson(res)}`
+        } catch (e) {
+          statusEl.classList.add('err')
+          statusEl.textContent = '删除异常：' + e
+        }
+      })
+
+      document.getElementById('addForm').addEventListener('submit', async (ev) => {
+        ev.preventDefault()
+        statusEl.classList.remove('err')
+        const fd = new FormData(ev.target)
+        const payload = {
+          name: String(fd.get('name') ?? '').trim(),
+          score: Number(fd.get('score')),
+          age: Number(fd.get('age')),
+          phone: String(fd.get('phone') ?? '').trim(),
+        }
+
+        const clientErr = validateClient(payload)
+        if (clientErr) {
+          statusEl.classList.add('err')
+          statusEl.textContent = `（前端拦截）${clientErr} — 未发送请求`
+          return
+        }
+
+        try {
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify(payload),
+          })
+
+          if (res.status === 401) {
+            statusEl.classList.add('err')
+            statusEl.textContent =
+              '未登录或 Session 失效：请打开 login.html 重新 POST /api/login（口令 demo）'
+            return
+          }
+          if (!res.ok) {
+            statusEl.classList.add('err')
+            statusEl.textContent = `新增失败：HTTP ${res.status} — ${await parseErrorJson(res)}`
+            return
+          }
+
+          statusEl.textContent = `新增成功（HTTP ${res.status}），已重新 GET`
+          await load()
+        } catch (e) {
+          statusEl.classList.add('err')
+          statusEl.textContent = '提交异常：' + e
+        }
+      })
+
+      document.getElementById('putBtn').addEventListener('click', async () => {
+        statusEl.classList.remove('err')
+        const payload = {
+          id: Number(document.getElementById('putId').value),
+          name: String(document.getElementById('putName').value ?? '').trim(),
+          score: Number(document.getElementById('putScore').value),
+          age: Number(document.getElementById('putAge').value),
+          phone: String(document.getElementById('putPhone').value ?? '').trim(),
+        }
+        if (!Number.isFinite(payload.id) || payload.id <= 0) {
+          statusEl.classList.add('err')
+          statusEl.textContent = 'PUT 需要有效 id'
+          return
+        }
+
+        const clientErr = validateClient(payload)
+        if (clientErr) {
+          statusEl.classList.add('err')
+          statusEl.textContent = `（前端拦截）${clientErr} — 未发送请求`
+          return
+        }
+
+        try {
+          const res = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json;charset=UTF-8',
+            },
+            body: JSON.stringify(payload),
+          })
+
+          if (res.status === 401) {
+            statusEl.classList.add('err')
+            statusEl.textContent =
+              '未登录或 Session 失效：请打开 login.html 重新 POST /api/login（口令 demo）'
+            return
+          }
+          if (!res.ok) {
+            statusEl.classList.add('err')
+            statusEl.textContent = `更新失败：HTTP ${res.status} — ${await parseErrorJson(res)}`
+            return
+          }
+
+          statusEl.textContent = `更新成功（HTTP ${res.status}），已重新 GET`
+          await load()
+        } catch (e) {
+          statusEl.classList.add('err')
+          statusEl.textContent = 'PUT 异常：' + e
+        }
+      })
+
+      load()
+    </script>
+  </body>
+</html>

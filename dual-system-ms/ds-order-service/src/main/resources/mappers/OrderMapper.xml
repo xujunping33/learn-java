@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="learn.java.dualsystem.order.mapper.OrderMapper">
+
+    <resultMap id="OrderResult" type="learn.java.dualsystem.order.model.Order">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="amount" column="amount"/>
+        <result property="status" column="status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"
+                javaType="learn.java.dualsystem.order.model.OrderStatus"/>
+        <result property="paidPaymentId" column="paid_payment_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO orders (user_id, amount, status)
+        VALUES (#{userId}, #{amount}, #{status})
+    </insert>
+
+    <select id="selectById" resultMap="OrderResult">
+        SELECT id, user_id, amount, status, paid_payment_id, created_at, updated_at
+        FROM orders
+        WHERE id = #{id}
+    </select>
+
+    <update id="markPaid">
+        UPDATE orders
+        SET status = 'PAID',
+            paid_payment_id = #{paymentId},
+            updated_at = CURRENT_TIMESTAMP(3)
+        WHERE id = #{orderId}
+          AND status = 'CREATED'
+    </update>
+</mapper>

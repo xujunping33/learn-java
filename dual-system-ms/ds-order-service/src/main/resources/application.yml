@@ -1,0 +1,46 @@
+server:
+  port: 9082
+
+spring:
+  application:
+    name: ds-order-service
+  datasource:
+    url: ${ORDER_DB_URL:jdbc:mysql://localhost:3307/ds_order?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${ORDER_DB_USER:root}
+    password: ${ORDER_DB_PASSWORD:root}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:${NACOS_ADDR:127.0.0.1:8849}}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+dual:
+  rabbit:
+    payment-succeeded:
+      exchange: dual.payment.topic
+      routing-key: payment.succeeded
+      queue: dual.order.payment-succeeded
+
+mybatis:
+  mapper-locations: classpath:/mappers/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+sentinel:
+  local:
+    qps: ${SENTINEL_LOCAL_QPS:0}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %-5level [%thread] [req=%X{requestId:-}] %logger - %msg%n"
+

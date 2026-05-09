@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>servlet-demo</title>
+  </head>
+  <body>
+    <h1>servlet-demo</h1>
+    <p>静态页来自 <code>src/main/webapp/index.html</code>（部署后在上下文根路径）。</p>
+    <ul>
+      <li><a href="hello">HelloServlet（/hello）</a></li>
+      <li><a href="ping">PingServlet（/ping）</a></li>
+      <li>
+        <a href="echo?name=%E5%BC%A0%E4%B8%89&amp;msg=GET%E4%B8%AD%E6%96%87%E6%B5%8B%E8%AF%95"
+          >EchoServlet（GET，URL 已 UTF-8 百分号编码）</a
+        >
+      </li>
+      <li><a href="echo-form.html">EchoServlet（POST 表单，含中文）</a></li>
+      <li><a href="home">HomeServlet → 302 重定向到 /hello</a></li>
+      <li>
+        <a href="login">Login：缺参 → 400</a> ·
+        <a href="login?user=a&amp;pass=wrong">错口令 → 401 JSON</a> ·
+        <a href="login?user=a&amp;pass=demo">正确 → 200 HTML</a>
+      </li>
+      <li>
+        <a href="counter">CounterServlet（Session 计数）</a> ·
+        <a href="global-counter">GlobalCounterServlet（全站计数）</a>
+      </li>
+      <li><a href="health">HealthServlet（JSON）</a></li>
+      <li><a href="api/ping">Day120 · GET /api/ping（Gson JSON + 中文）</a></li>
+      <li><a href="static/students.html">Day121+ 学生 CRUD（需 Day126 登录 API）</a></li>
+      <li><a href="static/login.html">Day126 · Session 登录（POST /api/login）</a></li>
+    </ul>
+    <p>
+      尝试在地址栏访问
+      <code>WEB-INF/web.xml</code>
+      会被容器拒绝（见 W17-notes Day115）。
+    </p>
+  </body>
+</html>

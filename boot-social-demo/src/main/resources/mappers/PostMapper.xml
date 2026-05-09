@@ -9,6 +9,7 @@
         <result column="user_id" property="userId"/>
         <result column="title" property="title"/>
         <result column="content" property="content"/>
+        <result column="cover_object_key" property="coverObjectKey"/>
         <result column="created_at" property="createdAt"/>
         <result column="author_username" property="authorUsername"/>
         <result column="like_count" property="likeCount"/>
@@ -26,6 +27,7 @@
           p.user_id,
           p.title,
           p.content,
+          p.cover_object_key,
           p.created_at,
           u.username AS author_username,
           COALESCE(l.like_count, 0) AS like_count
@@ -53,6 +55,7 @@
           p.user_id,
           p.title,
           p.content,
+          p.cover_object_key,
           p.created_at,
           u.username AS author_username,
           COALESCE(l.like_count, 0) AS like_count
@@ -65,5 +68,11 @@
         ) l ON l.post_id = p.id
         WHERE p.id = #{id}
     </select>
+
+    <update id="updateCoverObjectKey">
+        UPDATE posts
+        SET cover_object_key = #{coverObjectKey}
+        WHERE id = #{id}
+    </update>
 
 </mapper>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="慕课类仿站首页：Header / Hero / 课程网格 / Footer。W16：信息架构 + 响应式 + tokens 可维护样式。"
+    />
+    <title>云课学院 · 仿站首页（W16）</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <!-- 区块职责：全站导航 + 品牌 + 主行动点 -->
+    <header class="site-header" id="top">
+      <div class="site-header__inner">
+        <a class="site-logo" href="#top" aria-label="云课学院首页">云课学院</a>
+        <nav class="site-nav" aria-label="主导航">
+          <ul class="site-nav__list">
+            <li><a href="#courses">课程</a></li>
+            <li><a href="#paths">路径</a></li>
+            <li><a href="#about">关于</a></li>
+          </ul>
+        </nav>
+        <a class="btn btn--header" href="#">免费注册</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- 区块职责：首屏价值主张 + 主 CTA，承接广告/活动入口 -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__inner">
+          <p class="hero__eyebrow">W16 · 仿站练习 · 静态页</p>
+          <h1 id="hero-title">像真实业务一样拆区块，再做成可维护页面</h1>
+          <p class="hero__subtitle">
+            Header 负责导航与转化入口；Hero 讲清「你是谁、用户得到什么」；CourseGrid 承载核心商品（课程卡片）；Footer
+            放版权、链接与合规信息。本页先搭信息架构，视觉在 Day 107–108 继续打磨。
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#">立即学习</a>
+            <a class="btn btn--ghost" href="#courses">浏览课程</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 区块职责：课程 SKU 展示，栅格内每张卡片是「可复用小块」 -->
+      <section class="course-grid" id="courses" aria-labelledby="courses-title">
+        <div class="section-head">
+          <h2 id="courses-title">精选课程</h2>
+          <p class="section-head__lead">6 张卡片占位数据，对应 Day 106「CourseGrid」组件化切分。</p>
+        </div>
+        <div class="course-grid__cards">
+          <article class="course-card">
+            <h3 class="course-card__title">Java 语言基础</h3>
+            <p class="course-card__desc">语法、面向对象与集合入门，适合零基础系统学习。</p>
+            <span class="course-card__meta">12 课时 · 入门</span>
+          </article>
+          <article class="course-card">
+            <h3 class="course-card__title">Spring Boot 实战</h3>
+            <p class="course-card__desc">起步依赖、Web、数据访问与部署，搭出可运行服务。</p>
+            <span class="course-card__meta">18 课时 · 进阶</span>
+          </article>
+          <article class="course-card">
+            <h3 class="course-card__title">MySQL 与 SQL</h3>
+            <p class="course-card__desc">表设计、查询、索引直觉，为后端与数据分析打基础。</p>
+            <span class="course-card__meta">10 课时 · 入门</span>
+          </article>
+          <article class="course-card">
+            <h3 class="course-card__title">前端三件套速览</h3>
+            <p class="course-card__desc">HTML/CSS/JS 结构与交互，读懂页面与接口联调。</p>
+            <span class="course-card__meta">14 课时 · 入门</span>
+          </article>
+          <article class="course-card">
+            <h3 class="course-card__title">Git 与协作</h3>
+            <p class="course-card__desc">分支、合并、Code Review 流程，贴近团队开发。</p>
+            <span class="course-card__meta">6 课时 · 入门</span>
+          </article>
+          <article class="course-card">
+            <h3 class="course-card__title">简历与面试准备</h3>
+            <p class="course-card__desc">项目描述、八股与模拟面试，完成学习闭环。</p>
+            <span class="course-card__meta">8 课时 · 通用</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- 占位锚点：后续 Day 可扩展「学习路径 / 讲师」等区块 -->
+      <section class="placeholder-strip" id="paths" aria-label="扩展区占位">
+        <p><strong>推荐区 / 路径 / 讲师</strong> 等区块可在后续天数接入；Day 106 先保证主路径清晰。</p>
+      </section>
+    </main>
+
+    <!-- 区块职责：次要链接、版权、备案与站点地图入口 -->
+    <footer class="site-footer" id="about">
+      <div class="site-footer__inner">
+        <p class="site-footer__copy">© 练习项目 · 无真实主体</p>
+        <ul class="site-footer__links">
+          <li><a href="#">用户协议</a></li>
+          <li><a href="#">隐私政策</a></li>
+          <li><a href="#">联系我们</a></li>
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>

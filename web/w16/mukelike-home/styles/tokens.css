@@ -1,0 +1,46 @@
+/**
+ * 设计令牌（Day 108）。改 --color-primary 一处，主按钮、描边按钮、正文链接、Hero 光晕与卡片 hover 描边会联动。
+ * 命名：BEM（site-header__inner、course-card__title）；修饰符用 --（btn--primary）。
+ */
+
+:root {
+  --color-primary: #ff6b35;
+  --color-primary-hover: color-mix(in srgb, var(--color-primary), white 24%);
+  --color-on-primary: #1a0a04;
+
+  --color-bg: #0c1014;
+  --color-surface: #151c24;
+  --color-text: #e9f0f6;
+  --color-muted: #8b9bab;
+  --color-meta: #6b7c8f;
+
+  --color-border: #243042;
+  --color-border-muted: #334155;
+  --color-border-soft: #3d4f63;
+
+  --color-link: color-mix(in srgb, var(--color-primary) 38%, #8ec8ff);
+  --color-link-hover: color-mix(in srgb, var(--color-link), white 22%);
+
+  --color-header-bg: rgba(12, 16, 20, 0.92);
+  --color-hero-glow: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  --color-primary-faint-bg: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  --color-card-hover-border: color-mix(in srgb, var(--color-primary) 38%, transparent);
+
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-pill: 999px;
+
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.25rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
+  --space-3xl: 2.75rem;
+
+  --shadow-card: 0 10px 32px rgba(0, 0, 0, 0.35);
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --max: 72rem;
+  --bp-md: 768px;
+}

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!-- 下划线列名 -> 驼峰属性名，例如 created_at -> createdAt -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- Day84：显式走 SLF4J，与 logback.xml 配合打印 SQL（classpath 有 slf4j 时推荐） -->
+        <setting name="logImpl" value="SLF4J"/>
+    </settings>
+
+    <environments default="dev">
+        <environment id="dev">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <!-- 先用你当前已可用的账号（admin）跑通，后续可改回 java 账号 -->
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/learn_java?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=utf8"/>
+                <property name="username" value="admin"/>
+                <property name="password" value="AdminPass_123!"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <mapper resource="mappers/StudentMapper.xml"/>
+        <mapper resource="mappers/DepartmentMapper.xml"/>
+        <mapper resource="mappers/EmployeeMapper.xml"/>
+    </mappers>
+</configuration>
+

@@ -1,0 +1,40 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: boot-social-post-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  cloud:
+    sentinel:
+      transport:
+        port: 8719
+    openfeign:
+      micrometer:
+        enabled: true
+      client:
+        config:
+          default:
+            connect-timeout: 2000
+            read-timeout: 2000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    propagation:
+      type: w3c,b3
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%X{traceId:-}/%X{spanId:-}] [${spring.application.name}] %logger{36} - %msg%n"
+
+sentinel:
+  local:
+    qps: ${SENTINEL_LOCAL_QPS:0}
+

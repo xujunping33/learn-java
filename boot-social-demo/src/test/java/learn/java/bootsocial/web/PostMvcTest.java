@@ -13,15 +13,14 @@ import java.util.Collections;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import learn.java.bootsocial.cache.PostDetailCache;
-import learn.java.bootsocial.auth.SessionKeys;
 import learn.java.bootsocial.config.AppProperties;
-import learn.java.bootsocial.config.AuthInterceptor;
 import learn.java.bootsocial.config.DevWebConfig;
 import learn.java.bootsocial.model.Post;
 import learn.java.bootsocial.service.CommentService;
 import learn.java.bootsocial.service.PostDetailService;
 import learn.java.bootsocial.service.PostLikeService;
 import learn.java.bootsocial.service.PostService;
+import learn.java.bootsocial.ratelimit.WriteActionRateLimiter;
 import learn.java.bootsocial.web.dto.PostDetailResponse;
 import learn.java.bootsocial.web.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -39,7 +38,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("dev")
 @TestPropertySource(properties = "app.api.default-page-size=11")
 @EnableConfigurationProperties(AppProperties.class)
-@Import({DevWebConfig.class, AuthInterceptor.class, GlobalExceptionHandler.class})
+@Import({DevWebConfig.class, GlobalExceptionHandler.class})
 class PostMvcTest {
 
     @Autowired
@@ -60,6 +59,9 @@ class PostMvcTest {
     @MockitoBean
     private PostDetailService postDetailService;
 
+    @MockitoBean
+    private WriteActionRateLimiter writeActionRateLimiter;
+
     @Test
     void createPostWithoutSessionReturns401() throws Exception {
         mockMvc.perform(
@@ -67,14 +69,13 @@ class PostMvcTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"title\":\"hello\",\"content\":\"world\"}"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
     }
 
     @Test
     void createPostWithBlankTitleReturns400() throws Exception {
         mockMvc.perform(
                         post("/api/posts")
-                                .sessionAttr(SessionKeys.UID, 1L)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"title\":\" \",\"content\":\"world\"}"))
                 .andExpect(status().isBadRequest())
@@ -151,6 +152,7 @@ class PostMvcTest {
                         0L,
                         "titled",
                         "body",
+                        null,
                         "2026-05-07T08:00:00",
                         Collections.emptyList());
         when(postDetailService.get(1L)).thenReturn(body);

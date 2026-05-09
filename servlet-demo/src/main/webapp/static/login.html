@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Session 登录 · Day126</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1.25rem;
+        max-width: 26rem;
+      }
+      #status {
+        margin-top: 0.75rem;
+        color: #475569;
+      }
+      #status.err {
+        color: #b91c1c;
+      }
+      label {
+        display: block;
+        margin: 0.4rem 0;
+      }
+      input {
+        width: 100%;
+        max-width: 18rem;
+        box-sizing: border-box;
+      }
+      button {
+        margin-top: 0.6rem;
+        font: inherit;
+        padding: 0.4rem 0.9rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>API Session 登录</h1>
+    <p>演示口令与 Day117 一致：<strong>demo</strong>。成功后在 Session 写入 <code>user</code>，即可访问 <code>/api/*</code>。</p>
+    <label>用户名 <input id="user" type="text" value="alice" /></label>
+    <label>口令 <input id="pass" type="password" value="demo" /></label>
+    <button type="button" id="btn">POST /api/login（JSON）</button>
+    <p id="status"></p>
+    <p><a href="students.html">→ 学生列表（需先登录）</a> · <a href="../index.html">首页</a></p>
+
+    <script type="module">
+      const statusEl = document.getElementById('status')
+      const loginUrl = new URL('../api/login', window.location.href).href
+
+      document.getElementById('btn').addEventListener('click', async () => {
+        statusEl.classList.remove('err')
+        statusEl.textContent = '请求中…'
+        const payload = {
+          user: String(document.getElementById('user').value ?? '').trim(),
+          pass: String(document.getElementById('pass').value ?? ''),
+        }
+        try {
+          const res = await fetch(loginUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+            body: JSON.stringify(payload),
+          })
+          const text = await res.text()
+          let json
+          try {
+            json = text ? JSON.parse(text) : null
+          } catch {
+            json = null
+          }
+          if (!res.ok) {
+            statusEl.classList.add('err')
+            statusEl.textContent =
+              '失败 HTTP ' + res.status + ' — ' + (json && json.error ? json.error : text)
+            return
+          }
+          statusEl.textContent = '登录成功：' + JSON.stringify(json)
+        } catch (e) {
+          statusEl.classList.add('err')
+          statusEl.textContent = '异常：' + e
+        }
+      })
+    </script>
+  </body>
+</html>

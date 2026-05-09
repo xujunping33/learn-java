@@ -1,0 +1,42 @@
+server:
+  port: 9080
+
+# B 端报表鉴权（Day237）：非空则要求请求头 X-Report-Key。环境变量 REPORT_API_KEY。
+report:
+  api-key: ${REPORT_API_KEY:}
+
+spring:
+  application:
+    name: ds-gateway
+  cloud:
+    nacos:
+      discovery:
+        # Prefer Spring canonical env (Docker Compose), then NACOS_ADDR (local shell).
+        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:${NACOS_ADDR:127.0.0.1:8849}}
+    gateway:
+      routes:
+        - id: order-service
+          uri: lb://ds-order-service
+          predicates:
+            - Path=/api/orders/**
+        - id: payment-service
+          uri: lb://ds-payment-service
+          predicates:
+            - Path=/api/payments/**
+        - id: report-service-admin
+          uri: lb://ds-report-service
+          predicates:
+            - Path=/api/admin/reports/**
+          filters:
+            - RewritePath=/api/admin/reports/(?<segment>.*), /api/reports/$\{segment}
+        - id: report-service
+          uri: lb://ds-report-service
+          predicates:
+            - Path=/api/reports/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+

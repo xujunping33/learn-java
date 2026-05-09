@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="仿学习平台首页：导航、主视觉、课程卡片、页脚。W15 Day 103 综合案例。"
+    />
+    <title>云课 Java 学院 · 课程首页（练习落地页）</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-nav">
+      <a class="site-nav__brand" href="#">云课 Java 学院</a>
+      <nav aria-label="主导航">
+        <ul class="site-nav__links">
+          <li><a href="#courses">全部课程</a></li>
+          <li><a href="#">学习路径</a></li>
+          <li><a href="#">社区</a></li>
+          <li><a href="#">登录</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__inner">
+          <h1 id="hero-title">系统学 Java，从小白到能写项目</h1>
+          <p class="hero__subtitle">
+            与后端岗位对齐的章节设计：语法、OOP、集合、并发、持久化与框架入门。本页为静态仿站练习，无真实购课与登录。
+          </p>
+          <a class="btn btn--primary" href="#">立即学习</a>
+        </div>
+      </section>
+
+      <section class="section" id="courses" aria-labelledby="courses-title">
+        <h2 id="courses-title" class="section__title">热门课程</h2>
+        <p class="section__lead">6 张示例卡片，栅格布局；窄屏自动变为单列，避免挤压不可读。</p>
+
+        <div class="cards">
+          <article class="card">
+            <span class="card__tag">基础</span>
+            <h3>Java 语法与工具链</h3>
+            <p>变量、控制流、方法、异常与 Maven 入门，建立可运行的最小项目骨架。</p>
+            <div class="card__meta">12 课时 · 入门</div>
+          </article>
+
+          <article class="card">
+            <span class="card__tag">核心</span>
+            <h3>面向对象与设计基础</h3>
+            <p>类与接口、封装继承多态、常用设计直觉，为读框架源码打基础。</p>
+            <div class="card__meta">14 课时 · 入门</div>
+          </article>
+
+          <article class="card">
+            <span class="card__tag">集合</span>
+            <h3>集合框架与泛型</h3>
+            <p>List / Set / Map 选型、迭代与泛型约束，避免「一切 ArrayList」。</p>
+            <div class="card__meta">10 课时 · 进阶</div>
+          </article>
+
+          <article class="card">
+            <span class="card__tag">IO</span>
+            <h3>IO、NIO 与文件处理</h3>
+            <p>字节/字符流、Path 与缓冲区思想，对接日志与上传等常见场景。</p>
+            <div class="card__meta">9 课时 · 进阶</div>
+          </article>
+
+          <article class="card">
+            <span class="card__tag">并发</span>
+            <h3>多线程与 JUC 入门</h3>
+            <p>线程创建、同步、线程池与常见并发工具类，建立安全并发直觉。</p>
+            <div class="card__meta">11 课时 · 进阶</div>
+          </article>
+
+          <article class="card">
+            <span class="card__tag">数据</span>
+            <h3>JDBC 与数据访问</h3>
+            <p>连接、SQL、事务边界与连接池概念，过渡到 MyBatis / Spring Data。</p>
+            <div class="card__meta">13 课时 · 进阶</div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>W15 Day 103 · 纯静态仿站 · 图片与接口均为占位</p>
+    </footer>
+  </body>
+</html>

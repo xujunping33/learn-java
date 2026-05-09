@@ -3,6 +3,8 @@ package learn.java.bootsocial.web.exception;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import learn.java.bootsocial.web.dto.ApiError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -52,6 +55,22 @@ public class GlobalExceptionHandler {
         return json(status, ApiError.simple(ex.code(), ex.getMessage()));
     }
 
+    @ExceptionHandler(NotLoginException.class)
+    public ResponseEntity<ApiError> handleNotLogin(NotLoginException ex) {
+        NotLoginMapping mapped = mapNotLogin(ex);
+        return json(HttpStatus.UNAUTHORIZED, ApiError.simple(mapped.code(), mapped.message()));
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    public ResponseEntity<ApiError> handleNotPermission(NotPermissionException ex) {
+        return json(HttpStatus.FORBIDDEN, ApiError.simple("FORBIDDEN", "forbidden"));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex) {
+        return json(HttpStatus.NOT_FOUND, ApiError.simple("NOT_FOUND", "not found"));
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiError> handleStatus(ResponseStatusException ex) {
         HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
@@ -73,5 +92,27 @@ public class GlobalExceptionHandler {
     private static ResponseEntity<ApiError> json(HttpStatus status, ApiError body) {
         return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(body);
     }
+
+    private static NotLoginMapping mapNotLogin(NotLoginException ex) {
+        String type = ex == null ? null : ex.getType();
+        if (NotLoginException.NOT_TOKEN.equals(type)) {
+            return new NotLoginMapping("AUTH_REQUIRED", "not logged in");
+        }
+        if (NotLoginException.TOKEN_TIMEOUT.equals(type)) {
+            return new NotLoginMapping("AUTH_EXPIRED", "token expired");
+        }
+        if (NotLoginException.INVALID_TOKEN.equals(type)) {
+            return new NotLoginMapping("AUTH_INVALID_TOKEN", "invalid token");
+        }
+        if (NotLoginException.BE_REPLACED.equals(type)) {
+            return new NotLoginMapping("AUTH_EXPIRED", "login replaced");
+        }
+        if (NotLoginException.KICK_OUT.equals(type)) {
+            return new NotLoginMapping("AUTH_EXPIRED", "kicked out");
+        }
+        return new NotLoginMapping("AUTH_REQUIRED", "not logged in");
+    }
+
+    private record NotLoginMapping(String code, String message) {}
 }
 

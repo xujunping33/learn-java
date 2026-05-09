@@ -17,6 +17,15 @@ public class AppProperties {
     @Valid
     private final Api api = new Api();
 
+    @Valid
+    private final Auth auth = new Auth();
+
+    @Valid
+    private final Outbox outbox = new Outbox();
+
+    @Valid
+    private final RateLimit rateLimit = new RateLimit();
+
     private final Cors cors = new Cors();
 
     @Valid
@@ -24,6 +33,18 @@ public class AppProperties {
 
     public Api getApi() {
         return api;
+    }
+
+    public Auth getAuth() {
+        return auth;
+    }
+
+    public Outbox getOutbox() {
+        return outbox;
+    }
+
+    public RateLimit getRateLimit() {
+        return rateLimit;
     }
 
     public Cors getCors() {
@@ -74,6 +95,120 @@ public class AppProperties {
 
         public void setPostDetailAbsentCacheTtlSeconds(int postDetailAbsentCacheTtlSeconds) {
             this.postDetailAbsentCacheTtlSeconds = postDetailAbsentCacheTtlSeconds;
+        }
+    }
+
+    public static class Auth {
+        private MultiLoginPolicy multiLoginPolicy = MultiLoginPolicy.ALLOW;
+
+        public MultiLoginPolicy getMultiLoginPolicy() {
+            return multiLoginPolicy;
+        }
+
+        public void setMultiLoginPolicy(MultiLoginPolicy multiLoginPolicy) {
+            this.multiLoginPolicy = multiLoginPolicy;
+        }
+    }
+
+    public enum MultiLoginPolicy {
+        /** 允许多端同时登录（同账号多 token 并存） */
+        ALLOW,
+        /** 新登录会顶掉旧 token（互踢） */
+        REPLACE,
+        /** 已登录则拒绝再次登录 */
+        DENY
+    }
+
+    public static class Outbox {
+        private boolean publisherEnabled = true;
+
+        @Min(1)
+        @Max(60000)
+        private int pollIntervalMs = 2000;
+
+        @Min(1)
+        @Max(500)
+        private int batchSize = 50;
+
+        public boolean isPublisherEnabled() {
+            return publisherEnabled;
+        }
+
+        public void setPublisherEnabled(boolean publisherEnabled) {
+            this.publisherEnabled = publisherEnabled;
+        }
+
+        public int getPollIntervalMs() {
+            return pollIntervalMs;
+        }
+
+        public void setPollIntervalMs(int pollIntervalMs) {
+            this.pollIntervalMs = pollIntervalMs;
+        }
+
+        public int getBatchSize() {
+            return batchSize;
+        }
+
+        public void setBatchSize(int batchSize) {
+            this.batchSize = batchSize;
+        }
+    }
+
+    /** W30 Day208：点赞/评论 Redis 固定窗口限流 */
+    public static class RateLimit {
+        private boolean enabled = true;
+
+        /** 窗口长度（秒），窗口内计数超出 {@link #maxRequests} 则 429 */
+        @Min(1)
+        @Max(3600)
+        private int windowSeconds = 10;
+
+        @Min(1)
+        @Max(10000)
+        private int maxRequests = 3;
+
+        private boolean applyToLike = true;
+        private boolean applyToComment = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getWindowSeconds() {
+            return windowSeconds;
+        }
+
+        public void setWindowSeconds(int windowSeconds) {
+            this.windowSeconds = windowSeconds;
+        }
+
+        public int getMaxRequests() {
+            return maxRequests;
+        }
+
+        public void setMaxRequests(int maxRequests) {
+            this.maxRequests = maxRequests;
+        }
+
+        public boolean isApplyToLike() {
+            return applyToLike;
+        }
+
+        public void setApplyToLike(boolean applyToLike) {
+            this.applyToLike = applyToLike;
+        }
+
+        public boolean isApplyToComment() {
+            return applyToComment;
+        }
+
+        public void setApplyToComment(boolean applyToComment) {
+            this.applyToComment = applyToComment;
         }
     }
 

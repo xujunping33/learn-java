@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="learn.java.dualsystem.payment.mapper.PaymentMapper">
+
+    <resultMap id="PaymentResult" type="learn.java.dualsystem.payment.model.Payment">
+        <id property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="amount" column="amount"/>
+        <result property="status" column="status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"
+                javaType="learn.java.dualsystem.payment.model.PaymentStatus"/>
+        <result property="paidAt" column="paid_at"/>
+        <result property="orderMarkedPaidAt" column="order_marked_paid_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO payments (order_id, user_id, amount, status)
+        VALUES (#{orderId}, #{userId}, #{amount}, 'INIT')
+    </insert>
+
+    <select id="selectById" resultMap="PaymentResult">
+        SELECT id, order_id, user_id, amount, status, paid_at, order_marked_paid_at, created_at, updated_at
+        FROM payments
+        WHERE id = #{id}
+    </select>
+
+    <update id="markSuccessIfInit">
+        UPDATE payments
+        SET status = 'SUCCESS',
+            paid_at = #{paidAt},
+            updated_at = CURRENT_TIMESTAMP(3)
+        WHERE id = #{id}
+          AND status = 'INIT'
+    </update>
+
+    <update id="markEventPublished">
+        UPDATE payments
+        SET order_marked_paid_at = #{at},
+            updated_at = CURRENT_TIMESTAMP(3)
+        WHERE id = #{id}
+    </update>
+</mapper>

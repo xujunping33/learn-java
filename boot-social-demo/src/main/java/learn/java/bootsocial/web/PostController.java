@@ -1,6 +1,8 @@
 package learn.java.bootsocial.web;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +13,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import learn.java.bootsocial.auth.SessionKeys;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import learn.java.bootsocial.cache.PostDetailCache;
 import learn.java.bootsocial.config.AppProperties;
 import learn.java.bootsocial.config.OpenApiConfiguration;
@@ -21,16 +24,24 @@ import learn.java.bootsocial.service.CommentService;
 import learn.java.bootsocial.service.PostDetailService;
 import learn.java.bootsocial.service.PostLikeService;
 import learn.java.bootsocial.service.PostService;
+import learn.java.bootsocial.service.StorageService;
+import learn.java.bootsocial.storage.CoverDbFailureSwitch;
+import learn.java.bootsocial.ratelimit.WriteActionRateLimiter;
 import learn.java.bootsocial.web.dto.ApiResult;
 import learn.java.bootsocial.web.dto.CommentResponse;
+import learn.java.bootsocial.web.dto.CoverUploadResponse;
 import learn.java.bootsocial.web.dto.CreateCommentRequest;
 import learn.java.bootsocial.web.dto.CreatePostRequest;
 import learn.java.bootsocial.web.dto.PageResult;
 import learn.java.bootsocial.web.dto.PostDetailResponse;
 import learn.java.bootsocial.web.dto.PostResponse;
+import learn.java.bootsocial.web.exception.BizException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,9 +50,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Posts", description = "帖子列表/详情（GET 匿名）、发帖与评论点赞（写操作需 Session）")
 @Validated
@@ -50,23 +62,34 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 @Profile({"dev", "docker"})
 public class PostController {
 
+    private static final Logger log = LoggerFactory.getLogger(PostController.class);
+
     private final PostService postService;
     private final CommentService commentService;
     private final PostLikeService postLikeService;
     private final AppProperties appProperties;
     private final PostDetailService postDetailService;
+    private final WriteActionRateLimiter writeActionRateLimiter;
+    private final ObjectProvider<StorageService> storageServiceProvider;
+    private final ObjectProvider<CoverDbFailureSwitch> coverDbFailureSwitchProvider;
 
     public PostController(
             PostService postService,
             CommentService commentService,
             PostLikeService postLikeService,
             AppProperties appProperties,
-            PostDetailService postDetailService) {
+            PostDetailService postDetailService,
+            WriteActionRateLimiter writeActionRateLimiter,
+            ObjectProvider<StorageService> storageServiceProvider,
+            ObjectProvider<CoverDbFailureSwitch> coverDbFailureSwitchProvider) {
         this.postService = postService;
         this.commentService = commentService;
         this.postLikeService = postLikeService;
         this.appProperties = appProperties;
         this.postDetailService = postDetailService;
+        this.writeActionRateLimiter = writeActionRateLimiter;
+        this.storageServiceProvider = storageServiceProvider;
+        this.coverDbFailureSwitchProvider = coverDbFailureSwitchProvider;
     }
 
     @Operation(
@@ -79,9 +102,10 @@ public class PostController {
             })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
+    @SaCheckLogin
     public ApiResult<PostResponse> create(
-            @Valid @RequestBody CreatePostRequest body, @SessionAttribute(SessionKeys.UID) Long userId) {
-        Post created = postService.createPost(userId, body.title(), body.content());
+            @Valid @RequestBody CreatePostRequest body) {
+        Post created = postService.createPost(StpUtil.getLoginIdAsLong(), body.title(), body.content());
         return ApiResult.ok(toPostResponse(created));
     }
 
@@ -129,31 +153,40 @@ public class PostController {
                 @ApiResponse(responseCode = "201"),
                 @ApiResponse(responseCode = "400"),
                 @ApiResponse(responseCode = "401", description = "未登录"),
-                @ApiResponse(responseCode = "404", description = "帖子不存在")
+                @ApiResponse(responseCode = "404", description = "帖子不存在"),
+                @ApiResponse(responseCode = "429", description = "限流 `RATE_LIMITED`（W30 Day208）")
             })
     @PostMapping(
             path = "/{id}/comments",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
+    @SaCheckLogin
     public ApiResult<CommentResponse> addComment(
             @Parameter(description = "帖子 id") @PathVariable("id") long postId,
-            @Valid @RequestBody CreateCommentRequest body,
-            @SessionAttribute(SessionKeys.UID) Long userId) {
-        Comment c = commentService.addComment(postId, userId, body.content());
+            @Valid @RequestBody CreateCommentRequest body) {
+        long uid = StpUtil.getLoginIdAsLong();
+        writeActionRateLimiter.checkComment(postId, uid);
+        Comment c = commentService.addComment(postId, uid, body.content());
         return ApiResult.ok(toCommentResponse(c));
     }
 
     @Operation(
             summary = "点赞（幂等）",
             security = {@SecurityRequirement(name = OpenApiConfiguration.SECURITY_SCHEME_NAME)},
-            responses = {@ApiResponse(responseCode = "204"), @ApiResponse(responseCode = "401")})
+            responses = {
+                @ApiResponse(responseCode = "204"),
+                @ApiResponse(responseCode = "401"),
+                @ApiResponse(responseCode = "429", description = "限流 `RATE_LIMITED`")
+            })
     @PostMapping("/{id}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SaCheckLogin
     public void like(
-            @Parameter(description = "帖子 id") @PathVariable("id") long postId,
-            @SessionAttribute(SessionKeys.UID) Long userId) {
-        postLikeService.like(postId, userId);
+            @Parameter(description = "帖子 id") @PathVariable("id") long postId) {
+        long uid = StpUtil.getLoginIdAsLong();
+        writeActionRateLimiter.checkLike(postId, uid);
+        postLikeService.like(postId, uid);
     }
 
     @Operation(
@@ -162,10 +195,10 @@ public class PostController {
             responses = {@ApiResponse(responseCode = "204"), @ApiResponse(responseCode = "401")})
     @DeleteMapping("/{id}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SaCheckLogin
     public void unlike(
-            @Parameter(description = "帖子 id") @PathVariable("id") long postId,
-            @SessionAttribute(SessionKeys.UID) Long userId) {
-        postLikeService.unlike(postId, userId);
+            @Parameter(description = "帖子 id") @PathVariable("id") long postId) {
+        postLikeService.unlike(postId, StpUtil.getLoginIdAsLong());
     }
 
     /** 帖子详情：post + comments + likeCount（Day174 聚合） */
@@ -179,6 +212,100 @@ public class PostController {
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiResult<PostDetailResponse> detail(@Parameter(description = "帖子 id") @PathVariable("id") long id) {
         return ApiResult.ok(postDetailService.get(id));
+    }
+
+    @Operation(
+            summary = "上传帖子封面（jpg/png）",
+            description = "上传到 MinIO（S3 compatible），并在 MySQL `posts.cover_object_key` 记录对象 key；详情接口返回 presigned GET 的 coverUrl。",
+            security = {@SecurityRequirement(name = OpenApiConfiguration.SECURITY_SCHEME_NAME)},
+            responses = {
+                @ApiResponse(responseCode = "200", description = "success"),
+                @ApiResponse(responseCode = "400", description = "文件非法 / 参数非法"),
+                @ApiResponse(responseCode = "401", description = "未登录"),
+                @ApiResponse(responseCode = "403", description = "非作者不可修改封面"),
+                @ApiResponse(responseCode = "404", description = "帖子不存在")
+            })
+    @PostMapping(
+            path = "/{id}/cover",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @SaCheckLogin
+    public ApiResult<CoverUploadResponse> uploadCover(
+            @Parameter(description = "帖子 id") @PathVariable("id") long postId,
+            @RequestPart("file") MultipartFile file) throws Exception {
+        StorageService ss = storageServiceProvider.getIfAvailable();
+        if (ss == null) {
+            throw new BizException(HttpStatus.SERVICE_UNAVAILABLE, "STORAGE_UNAVAILABLE", "storage is not configured");
+        }
+        if (postId <= 0) {
+            throw new BizException(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "postId is required");
+        }
+        if (file == null || file.isEmpty()) {
+            throw new BizException(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "file is required");
+        }
+        if (file.getSize() > 5L * 1024 * 1024) {
+            throw new BizException(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "file too large (max 5MB)");
+        }
+        String ct = file.getContentType() == null ? "" : file.getContentType().trim().toLowerCase(Locale.ROOT);
+        String ext =
+                switch (ct) {
+                    case "image/jpeg", "image/jpg" -> "jpg";
+                    case "image/png" -> "png";
+                    default -> null;
+                };
+        if (ext == null) {
+            throw new BizException(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "only jpg/png is allowed");
+        }
+
+        long uid = StpUtil.getLoginIdAsLong();
+        Post p = postService.getPostDetail(postId);
+        if (p == null) {
+            throw new BizException(HttpStatus.NOT_FOUND, "NOT_FOUND", "post not found");
+        }
+        if (p.getUserId() == null || p.getUserId() != uid) {
+            throw new BizException(HttpStatus.FORBIDDEN, "FORBIDDEN", "only author can update cover");
+        }
+
+        String objectKey = "posts/" + postId + "/cover-" + UUID.randomUUID() + "." + ext;
+        String uploadId = UUID.randomUUID().toString();
+        try {
+            ss.putObject(objectKey, file.getBytes(), ct);
+            CoverDbFailureSwitch sw = coverDbFailureSwitchProvider.getIfAvailable();
+            if (sw != null && sw.isEnabled()) {
+                throw new IllegalStateException("simulated cover db failure");
+            }
+            postService.updateCoverObjectKey(postId, objectKey);
+        } catch (RuntimeException ex) {
+            // 尝试删除已上传对象，避免 DB 更新失败导致孤儿对象
+            try {
+                ss.deleteObject(objectKey);
+            } catch (RuntimeException delEx) {
+                log.warn(
+                        "cover_upload_compensation_delete_failed uploadId={} postId={} objectKey={}",
+                        uploadId,
+                        postId,
+                        objectKey,
+                        delEx);
+            }
+            log.warn(
+                    "cover_upload_failed uploadId={} postId={} objectKey={} contentType={} size={}",
+                    uploadId,
+                    postId,
+                    objectKey,
+                    ct,
+                    file.getSize(),
+                    ex);
+            throw ex;
+        }
+        log.info(
+                "cover_upload_ok uploadId={} postId={} objectKey={} contentType={} size={}",
+                uploadId,
+                postId,
+                objectKey,
+                ct,
+                file.getSize());
+        String url = ss.presignedGetUrl(objectKey);
+        return ApiResult.ok(new CoverUploadResponse(objectKey, url));
     }
 
     private static PostResponse toPostResponse(Post p) {

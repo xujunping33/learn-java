@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="learn.java.mybatis.mapper.StudentMapper">
+
+    <select id="selectById" parameterType="long" resultType="learn.java.mybatis.model.Student">
+        SELECT id, name, score, age, created_at, updated_at
+        FROM student
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByName" parameterType="string" resultType="learn.java.mybatis.model.Student">
+        SELECT id, name, score, age, created_at, updated_at
+        FROM student
+        WHERE name = #{name}
+    </select>
+
+    <select id="selectByScoreRange" resultType="learn.java.mybatis.model.Student">
+        SELECT id, name, score, age, created_at, updated_at
+        FROM student
+        WHERE score BETWEEN #{min} AND #{max}
+        ORDER BY score DESC, id ASC
+    </select>
+
+    <insert id="insert" parameterType="learn.java.mybatis.model.Student"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO student (name, score, age)
+        VALUES (#{name}, #{score}, #{age})
+    </insert>
+
+    <!-- Day81：<where> 自动去掉多余 AND，且无条件时不生成 WHERE -->
+    <select id="selectByCondition" parameterType="learn.java.mybatis.model.StudentQuery"
+            resultType="learn.java.mybatis.model.Student">
+        SELECT id, name, score, age, created_at, updated_at
+        FROM student
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="scoreMin != null">
+                AND score &gt;= #{scoreMin}
+            </if>
+            <if test="scoreMax != null">
+                AND score &lt;= #{scoreMax}
+            </if>
+            <if test="age != null">
+                AND age = #{age}
+            </if>
+        </where>
+        ORDER BY id ASC
+    </select>
+
+    <!-- Day82：多行 INSERT；useGeneratedKeys 可把各主键回填到 list 中每个 Student（MySQL 支持） -->
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO student (name, score, age) VALUES
+        <foreach collection="list" item="s" separator=",">
+            (#{s.name}, #{s.score}, #{s.age})
+        </foreach>
+    </insert>
+
+    <select id="selectByIds" resultType="learn.java.mybatis.model.Student">
+        SELECT id, name, score, age, created_at, updated_at
+        FROM student
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY id ASC
+    </select>
+
+    <delete id="deleteByIds">
+        DELETE FROM student WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- Day83：分页必须 ORDER BY，否则插入/更新后“同一页”行可能跳动 -->
+    <select id="selectPage" resultType="learn.java.mybatis.model.Student">
+        SELECT id, name, score, age, created_at, updated_at
+        FROM student
+        ORDER BY id ASC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+</mapper>
+

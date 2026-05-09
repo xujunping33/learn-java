@@ -8,10 +8,46 @@ app:
     default-page-size: 20
     post-detail-cache-ttl-seconds: 120
     post-detail-absent-cache-ttl-seconds: 30
+  auth:
+    # 同账号多端登录策略：ALLOW=允许多 token；REPLACE=互踢顶号；DENY=拒绝重复登录
+    multi-login-policy: ALLOW
+  outbox:
+    publisher-enabled: true
+    poll-interval-ms: 2000
+    batch-size: 50
+  # W30 Day208：同用户同帖写操作固定窗口限流（Redis INCR + EXPIRE）
+  rate-limit:
+    enabled: true
+    window-seconds: 10
+    max-requests: 3
+    apply-to-like: true
+    apply-to-comment: true
   cors:
     origins: []
   session:
     cookie-name: JSESSIONID
+  # W31 Day213：MinIO（S3 兼容）；本地默认关闭，Docker 见 application-docker.yml
+  minio:
+    enabled: false
+    endpoint: http://127.0.0.1:9000
+    region: us-east-1
+    access-key: ""
+    secret-key: ""
+    bucket: boot-social
+    path-style-access: true
+    presign-get-ttl-seconds: 300
+
+# W29：Sa-Token（Session → Token）
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  is-read-header: true
+  is-read-cookie: false
+  # 与 app.auth.multi-login-policy 配合（默认 ALLOW 需要 concurrent=true + share=false 才能多端多 token）
+  is-concurrent: true
+  is-share: false
+  timeout: 7200
+  active-timeout: 1800
 
 server:
   servlet:

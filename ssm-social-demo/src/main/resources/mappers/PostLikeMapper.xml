@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="learn.java.ssmsocial.mapper.PostLikeMapper">
+
+    <!-- MySQL: ignore duplicates (unique(post_id,user_id)) -->
+    <insert id="insertLike">
+        INSERT IGNORE INTO post_likes (post_id, user_id)
+        VALUES (#{postId}, #{userId})
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM post_likes
+        WHERE post_id = #{postId} AND user_id = #{userId}
+    </delete>
+
+    <select id="countLikes" resultType="long">
+        SELECT COUNT(*)
+        FROM post_likes
+        WHERE post_id = #{postId}
+    </select>
+
+</mapper>
+

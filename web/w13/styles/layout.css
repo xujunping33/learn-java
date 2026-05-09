@@ -1,0 +1,111 @@
+/* 顶栏 + 左栏 float + 主区域 overflow 形成 BFC（避免与 float 重叠） */
+
+body.site-layout {
+  min-height: 100vh;
+}
+
+body.site-layout header.site-header {
+  max-width: none;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  min-height: 3.75rem;
+  display: flex;
+  align-items: center;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+body.site-layout .site-header-inner {
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space);
+  padding-right: var(--space);
+}
+
+body.site-layout header.site-header h1 {
+  font-size: 1.35rem;
+}
+
+body.site-layout header.site-header > .site-header-inner > p {
+  margin-top: 0.2rem;
+}
+
+body.site-layout .site-middle {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space);
+  padding-right: var(--space);
+}
+
+body.site-layout .site-middle::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+body.site-layout .site-sidebar {
+  position: relative;
+  float: left;
+  width: 12rem;
+  margin-right: 1rem;
+}
+
+body.site-layout .site-sidebar nav {
+  margin: 0;
+  padding: 0.75rem 0.5rem;
+  border-bottom: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  min-height: 12rem;
+}
+
+body.site-layout .site-sidebar nav ul {
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+body.site-layout .site-sidebar nav a {
+  display: block;
+  padding: 0.45rem 0.6rem;
+  border-bottom: none;
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+}
+
+body.site-layout .site-sidebar nav a.active,
+body.site-layout .site-sidebar nav a[aria-current="page"] {
+  border-bottom-color: transparent;
+  border-left-color: var(--color-primary);
+  background: #eef4fb;
+}
+
+body.site-layout main.site-main {
+  max-width: none;
+  margin: 0;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 1.25rem;
+  padding-bottom: 2rem;
+  overflow: hidden;
+}
+
+body.site-layout footer.site-footer {
+  max-width: none;
+  margin: 0;
+  clear: both;
+}
+
+body.site-layout .site-footer-inner {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space);
+  padding-right: var(--space);
+}

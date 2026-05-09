@@ -2,10 +2,9 @@ package learn.java.bootsocial.config;
 
 import java.util.regex.Pattern;
 
+import cn.dev33.satoken.stp.StpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import learn.java.bootsocial.auth.SessionKeys;
 import learn.java.bootsocial.web.exception.BizException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
@@ -32,10 +31,8 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (!requiresAuth(method, path)) {
             return true;
         }
-        HttpSession session = request.getSession(false);
-        Object uid = session == null ? null : session.getAttribute(SessionKeys.UID);
-        if (!(uid instanceof Long)) {
-            throw new BizException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "not logged in");
+        if (!StpUtil.isLogin()) {
+            throw new BizException(HttpStatus.UNAUTHORIZED, "AUTH_REQUIRED", "not logged in");
         }
         return true;
     }

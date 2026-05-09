@@ -9,33 +9,32 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile("dev")
+@Profile({"dev", "docker"})
 public class OpenApiConfiguration {
 
     /** OpenAPI 中安全方案的名称（{@code @SecurityRequirement} 引用）；非浏览器里的 cookie 名 */
-    public static final String SECURITY_SCHEME_NAME = "sessionCookie";
+    public static final String SECURITY_SCHEME_NAME = "bearerToken";
 
     @Bean
     public OpenAPI openAPI(AppProperties appProperties) {
-        String cookieName = appProperties.getSession().getCookieName();
         return new OpenAPI()
                 .info(
                         new Info()
                                 .title("boot-social-demo")
                                 .description(
-                                        "小型社交 API（Session）。Cookie 名为 **`"
-                                                + cookieName
-                                                + "`**（由 `app.session.cookie-name` 配置）。可先执行 "
-                                                + "register/login，Swagger 同域请求会携带 Set-Cookie；或在开发者工具复制该 cookie 后在 **Authorize** 填入同名参数。")
+                                        "小型社交 API（Sa-Token）。先执行 register/login 拿到 token，然后在请求头带："
+                                                + " **`Authorization: Bearer <token>`**（也可在 Swagger 的 **Authorize** 里填）。"
+                                                + "\n\n"
+                                                + "鉴权错误码（401/403）：`AUTH_REQUIRED`、`AUTH_EXPIRED`、`AUTH_INVALID_TOKEN`、`AUTH_INVALID_CREDENTIALS`、`FORBIDDEN`。")
                                 .version("0.0.1"))
                 .components(
                         new Components()
                                 .addSecuritySchemes(
                                         SECURITY_SCHEME_NAME,
                                         new SecurityScheme()
-                                                .type(SecurityScheme.Type.APIKEY)
-                                                .in(SecurityScheme.In.COOKIE)
-                                                .name(cookieName)
-                                                .description("HttpSession；注册或登录成功后由服务端 Set-Cookie 写入")));
+                                                .type(SecurityScheme.Type.HTTP)
+                                                .scheme("bearer")
+                                                .bearerFormat("JWT")
+                                                .description("Sa-Token（非 JWT 也可用 bearer 头传递 token）")));
     }
 }

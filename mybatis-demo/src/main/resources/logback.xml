@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--
+      Day84：看清 SQL + 参数
+      - org.apache.ibatis：MappedStatement、事务、缓存相关 DEBUG
+      - java.sql：Connection / PreparedStatement 等，便于看到 Preparing、Parameters
+      若日志过多，可把 java.sql 改为 INFO，仅保留 org.apache.ibatis。
+    -->
+    <logger name="org.apache.ibatis" level="DEBUG"/>
+    <logger name="java.sql" level="DEBUG"/>
+
+    <!-- Mapper 语句级 logger：如 StudentMapper.selectById，输出 ==> Preparing / Parameters（Day84） -->
+    <logger name="learn.java.mybatis.mapper" level="DEBUG"/>
+    <logger name="learn.java.mybatis" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
+
