@@ -1,0 +1,47 @@
+/* Day134：最小样式，避免登录页过于「裸」 */
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 28rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+label {
+  display: block;
+  margin: 0.75rem 0;
+}
+input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.5rem;
+}
+button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.err {
+  color: #b00020;
+}
+nav a {
+  margin-right: 0.75rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: #f4f4f4;
+}
+.actions button {
+  margin: 0.15rem 0.25rem 0 0;
+}

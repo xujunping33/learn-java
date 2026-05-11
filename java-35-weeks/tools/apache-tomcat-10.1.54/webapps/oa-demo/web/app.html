@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>OA 演示 · 工作台</title>
+  <link rel="stylesheet" href="static/theme.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+<div id="app">
+  <h1>工作台</h1>
+  <p v-if="!profile">未找到本地登录信息，<a href="login.html">返回登录</a>。</p>
+  <template v-else>
+    <nav>
+      <a href="app.html"><strong>工作台</strong></a>
+      <a v-if="hasRole('EMPLOYEE')" href="leaves.html">我的请假</a>
+      <a v-if="hasRole('MANAGER') || hasRole('ADMIN')" href="pending.html">待审</a>
+      <a v-if="hasRole('ADMIN')" href="admin-check.html">管理自检</a>
+    </nav>
+    <p>当前用户：<strong>{{ profile.displayName }}</strong>（<code>{{ profile.username }}</code>，id={{ profile.userId }}）</p>
+    <p>角色：<code>{{ (profile.roles || []).join(', ') || '—' }}</code></p>
+    <p>Day135：按角色显示入口；按钮级权限先做在 UI（无角色则隐藏链接）。</p>
+    <p>
+      <button type="button" @click="probeLeaves">快速自检 GET /api/leaves/me</button>
+    </p>
+    <p v-if="probeMsg" class="err">{{ probeMsg }}</p>
+    <pre v-if="probeJson">{{ probeJson }}</pre>
+    <p><a href="login.html">返回登录页</a></p>
+  </template>
+</div>
+<script>
+(function () {
+  const { createApp } = Vue;
+
+  function contextPath() {
+    const p = location.pathname;
+    const i = p.indexOf('/web/');
+    return i >= 0 ? p.substring(0, i) : '';
+  }
+
+  let raw = null;
+  try {
+    raw = sessionStorage.getItem('oa_profile');
+  } catch (e) {
+    /* ignore */
+  }
+  const profile = raw ? JSON.parse(raw) : null;
+
+  createApp({
+    data() {
+      return {
+        profile: profile,
+        probeMsg: '',
+        probeJson: ''
+      };
+    },
+    methods: {
+      hasRole(code) {
+        return this.profile && (this.profile.roles || []).includes(code);
+      },
+      async probeLeaves() {
+        this.probeMsg = '';
+        this.probeJson = '';
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/leaves/me', { credentials: 'include' });
+          const text = await res.text();
+          try {
+            const j = JSON.parse(text);
+            this.probeJson = JSON.stringify(j, null, 2);
+            if (j.code !== 0) {
+              this.probeMsg = j.message || '业务错误';
+            }
+          } catch {
+            this.probeMsg = '非 JSON：' + text.slice(0, 200);
+          }
+        } catch (e) {
+          this.probeMsg = '请求失败：' + e;
+        }
+      }
+    }
+  }).mount('#app');
+})();
+</script>
+</body>
+</html>

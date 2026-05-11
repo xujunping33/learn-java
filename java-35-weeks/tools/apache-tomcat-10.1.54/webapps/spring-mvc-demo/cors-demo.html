@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>spring-mvc-demo · CORS + API Key (W23 Day159–160)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 1rem auto; line-height: 1.5; }
+    pre { background: #f4f4f4; padding: 0.75rem; overflow: auto; white-space: pre-wrap; }
+    button { padding: 0.4rem 0.8rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>CORS 演示</h1>
+  <p>
+    请先在本机用<strong>任意静态服务器</strong>监听 <strong>5173</strong> 并提供本文件，例如（在 <code>spring-mvc-demo/</code> 下）：
+    <code>npx --yes serve src/main/webapp -l 5173</code>，
+    再在浏览器打开 <strong>http://localhost:5173/cors-demo.html</strong>。
+    这样页面源为 <code>:5173</code>，请求 API <code>:8080/spring-mvc-demo</code> 为<strong>跨域</strong>，依赖服务端 CORS 响应头。
+  </p>
+  <p>
+    API 基址（可按部署改）：
+    <input id="base" size="48" value="http://localhost:8080/spring-mvc-demo" />
+  </p>
+  <p>
+    Day160：演示密钥（与服务器 <code>ApiKeyConstants.DEMO_VALUE</code> 一致）：
+    <input id="apikey" size="32" value="w23-demo-key" />
+  </p>
+  <p><button type="button" id="btn">POST /api/students（JSON + X-Api-Key）</button></p>
+  <pre id="log"></pre>
+  <script>
+    const logEl = document.getElementById("log");
+    function log(...a) {
+      logEl.textContent += a.join(" ") + "\n";
+    }
+    document.getElementById("btn").addEventListener("click", async () => {
+      logEl.textContent = "";
+      const API_BASE = document.getElementById("base").value.replace(/\/$/, "");
+      const url = API_BASE + "/api/students";
+      try {
+        const apiKey = document.getElementById("apikey").value.trim();
+        const r = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(apiKey ? { "X-Api-Key": apiKey } : {}),
+          },
+          body: JSON.stringify({ name: "cors_" + Date.now(), score: 80 }),
+        });
+        const corsHeaders = [...r.headers.entries()].filter(([k]) =>
+          k.toLowerCase().startsWith("access-control")
+        );
+        log("status:", r.status);
+        log("access-control headers (可见部分):", JSON.stringify(Object.fromEntries(corsHeaders)));
+        log("body:", await r.text());
+      } catch (e) {
+        log("fetch error:", e.message);
+      }
+    });
+  </script>
+</body>
+</html>

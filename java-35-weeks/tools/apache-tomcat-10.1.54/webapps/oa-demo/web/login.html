@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>OA 演示 · 登录</title>
+  <link rel="stylesheet" href="static/theme.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+<div id="app">
+  <h1>OA 演示登录</h1>
+  <p>部署在 <strong>{{ ctx || '/' }}</strong> 下；登录后浏览器会保存 <code>JSESSIONID</code>（需 <code>credentials: 'include'</code>）。</p>
+  <p v-if="error" class="err">{{ error }}</p>
+  <form @submit.prevent="login">
+    <label>用户名
+      <input v-model.trim="username" name="username" autocomplete="username" required/>
+    </label>
+    <label>密码
+      <input v-model="password" type="password" name="password" autocomplete="current-password" required/>
+    </label>
+    <button type="submit" :disabled="loading">{{ loading ? '登录中…' : '登录' }}</button>
+  </form>
+</div>
+<script>
+(function () {
+  const { createApp } = Vue;
+
+  function contextPath() {
+    const p = location.pathname;
+    const i = p.indexOf('/web/');
+    return i >= 0 ? p.substring(0, i) : '';
+  }
+
+  createApp({
+    data() {
+      return {
+        ctx: contextPath(),
+        username: '',
+        password: '',
+        loading: false,
+        error: ''
+      };
+    },
+    methods: {
+      async login() {
+        this.error = '';
+        this.loading = true;
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              username: this.username,
+              password: this.password
+            })
+          });
+          const json = await res.json();
+          if (json.code === 0 && json.data) {
+            sessionStorage.setItem('oa_profile', JSON.stringify(json.data));
+            location.href = 'app.html';
+          } else {
+            this.error = json.message || '登录失败';
+          }
+        } catch (e) {
+          this.error = '网络错误：' + e;
+        } finally {
+          this.loading = false;
+        }
+      }
+    }
+  }).mount('#app');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>OA · 本部门待审</title>
+  <link rel="stylesheet" href="static/theme.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+<div id="app">
+  <p v-if="!profile"><a href="login.html">请先登录</a></p>
+  <template v-else>
+    <nav>
+      <a href="app.html">工作台</a>
+      <a v-if="hasRole('EMPLOYEE')" href="leaves.html">我的请假</a>
+      <a href="pending.html"><strong>待审</strong></a>
+    </nav>
+    <h1>本部门待审（SUBMITTED）</h1>
+    <p v-if="!canPending" class="err">当前角色无「待审列表」权限（需 <code>MANAGER</code> 或具备待审权限的角色）。</p>
+    <template v-else>
+      <button type="button" @click="load">刷新</button>
+      <p v-if="msg" :class="{ err: err }">{{ msg }}</p>
+      <table v-if="items.length">
+        <thead>
+        <tr>
+          <th>id</th><th>申请人</th><th>类型</th><th>起止</th><th>事由</th><th>处理人</th><th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="r in items" :key="r.id">
+          <td>{{ r.id }}</td>
+          <td>{{ r.applicantUserId }}</td>
+          <td>{{ r.leaveType }}</td>
+          <td>{{ r.startAt }}<br/>{{ r.endAt }}</td>
+          <td>{{ r.reason }}</td>
+          <td>{{ r.currentAssigneeUserId }}</td>
+          <td class="actions">
+            <button type="button" @click="approve(r.id)">通过</button>
+            <button type="button" @click="reject(r.id)">驳回</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <p v-else>暂无待审</p>
+    </template>
+  </template>
+</div>
+<script>
+(function () {
+  const { createApp } = Vue;
+  function contextPath() {
+    const p = location.pathname;
+    const i = p.indexOf('/web/');
+    return i >= 0 ? p.substring(0, i) : '';
+  }
+  let profile = null;
+  try {
+    const raw = sessionStorage.getItem('oa_profile');
+    if (raw) profile = JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+
+  createApp({
+    data() {
+      const roles = (profile && profile.roles) || [];
+      return {
+        profile: profile,
+        canPending: profile && (roles.includes('MANAGER') || roles.includes('ADMIN')),
+        items: [],
+        msg: '',
+        err: false
+      };
+    },
+    mounted() {
+      if (this.canPending) this.load();
+    },
+    methods: {
+      hasRole(code) {
+        return this.profile && (this.profile.roles || []).includes(code);
+      },
+      async load() {
+        this.msg = '';
+        this.err = false;
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/leaves/pending', { credentials: 'include' });
+          const j = await res.json();
+          if (j.code === 0 && j.data && Array.isArray(j.data.items)) {
+            this.items = j.data.items;
+          } else {
+            this.msg = j.message || '加载失败';
+            this.err = true;
+          }
+        } catch (e) {
+          this.msg = String(e);
+          this.err = true;
+        }
+      },
+      async approve(id) {
+        this.msg = '';
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/leaves/' + id + '/approve', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+          });
+          const j = await res.json();
+          this.msg = j.message || (j.code === 0 ? '已通过' : '失败');
+          this.err = j.code !== 0;
+          await this.load();
+        } catch (e) {
+          this.msg = String(e);
+          this.err = true;
+        }
+      },
+      async reject(id) {
+        const remark = window.prompt('驳回原因（必填）', '');
+        if (remark === null) return;
+        if (!remark.trim()) {
+          alert('驳回须填写原因');
+          return;
+        }
+        this.msg = '';
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/leaves/' + id + '/reject', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ remark: remark.trim() })
+          });
+          const j = await res.json();
+          this.msg = j.message || (j.code === 0 ? '已驳回' : '失败');
+          this.err = j.code !== 0;
+          await this.load();
+        } catch (e) {
+          this.msg = String(e);
+          this.err = true;
+        }
+      }
+    }
+  }).mount('#app');
+})();
+</script>
+</body>
+</html>

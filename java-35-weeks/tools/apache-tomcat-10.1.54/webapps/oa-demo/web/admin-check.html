@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>OA · 管理端自检</title>
+  <link rel="stylesheet" href="static/theme.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+<div id="app">
+  <p v-if="!profile"><a href="login.html">请先登录</a></p>
+  <template v-else>
+    <nav>
+      <a href="app.html">工作台</a>
+      <a v-if="hasRole('EMPLOYEE')" href="leaves.html">我的请假</a>
+      <a v-if="hasRole('MANAGER') || hasRole('ADMIN')" href="pending.html">待审</a>
+    </nav>
+    <h1>管理端自检</h1>
+    <p v-if="!hasRole('ADMIN')" class="err">仅 <code>ADMIN</code> 可访问 <code>/api/admin/ping</code>。</p>
+    <template v-else>
+      <button type="button" @click="ping">调用 GET /api/admin/ping</button>
+      <p v-if="msg" :class="{ err: err }">{{ msg }}</p>
+      <pre v-if="json">{{ json }}</pre>
+    </template>
+  </template>
+</div>
+<script>
+(function () {
+  const { createApp } = Vue;
+  function contextPath() {
+    const p = location.pathname;
+    const i = p.indexOf('/web/');
+    return i >= 0 ? p.substring(0, i) : '';
+  }
+  let profile = null;
+  try {
+    const raw = sessionStorage.getItem('oa_profile');
+    if (raw) profile = JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+
+  createApp({
+    data() {
+      return { profile: profile, msg: '', err: false, json: '' };
+    },
+    methods: {
+      hasRole(code) {
+        return this.profile && (this.profile.roles || []).includes(code);
+      },
+      async ping() {
+        this.msg = '';
+        this.err = false;
+        this.json = '';
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/admin/ping', { credentials: 'include' });
+          const text = await res.text();
+          try {
+            const j = JSON.parse(text);
+            this.json = JSON.stringify(j, null, 2);
+            if (j.code !== 0) {
+              this.msg = j.message || '业务错误';
+              this.err = true;
+            }
+          } catch {
+            this.msg = text.slice(0, 200);
+            this.err = true;
+          }
+        } catch (e) {
+          this.msg = String(e);
+          this.err = true;
+        }
+      }
+    }
+  }).mount('#app');
+})();
+</script>
+</body>
+</html>

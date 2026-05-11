@@ -1,0 +1,15 @@
+# Copy to db.properties and modify (db.properties should usually NOT be committed)
+#
+# Ubuntu common pitfall:
+# - mysql root user may use auth_socket; JDBC root+password fails.
+# - Create a dedicated user for JDBC, then set db.user/db.password here.
+#
+# Example:
+#   CREATE USER IF NOT EXISTS 'ssm_social'@'localhost' IDENTIFIED BY 'StrongPassword';
+#   GRANT ALL PRIVILEGES ON ssm_social.* TO 'ssm_social'@'localhost';
+#   FLUSH PRIVILEGES;
+
+db.url=jdbc:mysql://127.0.0.1:3306/ssm_social?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+db.user=ssm_social
+db.password=你的密码
+

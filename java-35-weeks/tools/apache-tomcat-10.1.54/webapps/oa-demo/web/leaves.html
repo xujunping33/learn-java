@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>OA · 我的请假</title>
+  <link rel="stylesheet" href="static/theme.css"/>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+<div id="app">
+  <p v-if="!profile"><a href="login.html">请先登录</a></p>
+  <template v-else>
+    <nav>
+      <a href="app.html">工作台</a>
+      <a href="leaves.html"><strong>我的请假</strong></a>
+      <a v-if="hasRole('MANAGER') || hasRole('ADMIN')" href="pending.html">待审</a>
+    </nav>
+    <h1>我的请假</h1>
+    <section v-if="canSubmit">
+      <h2>提交请假</h2>
+      <form @submit.prevent="submit">
+        <label>类型
+          <select v-model="form.leaveType" required>
+            <option value="ANNUAL">年假 ANNUAL</option>
+            <option value="SICK">病假 SICK</option>
+            <option value="OTHER">其他 OTHER</option>
+          </select>
+        </label>
+        <label>开始
+          <input v-model="form.startAt" required placeholder="2026-06-01 或 2026-06-01T09:00:00"/>
+        </label>
+        <label>结束
+          <input v-model="form.endAt" required placeholder="2026-06-03（仅日期按当天 23:59:59）"/>
+        </label>
+        <label>事由
+          <input v-model="form.reason" required maxlength="500"/>
+        </label>
+        <button type="submit" :disabled="loading">{{ loading ? '提交中…' : '提交' }}</button>
+      </form>
+      <p v-if="msg" :class="{ err: err }">{{ msg }}</p>
+    </section>
+    <p v-else class="err">当前角色无「提交请假」入口（需员工角色 <code>EMPLOYEE</code>）。</p>
+
+    <h2>本人列表</h2>
+    <button type="button" @click="loadMe">刷新</button>
+    <p v-if="listMsg" :class="{ err: listErr }">{{ listMsg }}</p>
+    <table v-if="items.length">
+      <thead>
+      <tr>
+        <th>id</th><th>类型</th><th>起止</th><th>状态</th><th>事由</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="r in items" :key="r.id">
+        <td>{{ r.id }}</td>
+        <td>{{ r.leaveType }}</td>
+        <td>{{ r.startAt }}<br/>{{ r.endAt }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.reason }}</td>
+      </tr>
+      </tbody>
+    </table>
+    <p v-else>暂无数据</p>
+  </template>
+</div>
+<script>
+(function () {
+  const { createApp } = Vue;
+  function contextPath() {
+    const p = location.pathname;
+    const i = p.indexOf('/web/');
+    return i >= 0 ? p.substring(0, i) : '';
+  }
+  let profile = null;
+  try {
+    const raw = sessionStorage.getItem('oa_profile');
+    if (raw) profile = JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+
+  createApp({
+    data() {
+      return {
+        profile: profile,
+        canSubmit: profile && (profile.roles || []).includes('EMPLOYEE'),
+        form: { leaveType: 'ANNUAL', startAt: '', endAt: '', reason: '' },
+        loading: false,
+        msg: '',
+        err: false,
+        items: [],
+        listMsg: '',
+        listErr: false
+      };
+    },
+    mounted() {
+      if (this.profile) this.loadMe();
+    },
+    methods: {
+      hasRole(code) {
+        return this.profile && (this.profile.roles || []).includes(code);
+      },
+      async loadMe() {
+        this.listMsg = '';
+        this.listErr = false;
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/leaves/me', { credentials: 'include' });
+          const j = await res.json();
+          if (j.code === 0 && j.data && Array.isArray(j.data.items)) {
+            this.items = j.data.items;
+          } else {
+            this.listMsg = j.message || '加载失败';
+            this.listErr = true;
+          }
+        } catch (e) {
+          this.listMsg = String(e);
+          this.listErr = true;
+        }
+      },
+      async submit() {
+        this.msg = '';
+        this.err = false;
+        this.loading = true;
+        try {
+          const base = contextPath();
+          const res = await fetch(base + '/api/leaves', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(this.form)
+          });
+          const j = await res.json();
+          if (j.code === 0) {
+            this.msg = '已提交 id=' + j.data.id;
+            await this.loadMe();
+          } else {
+            this.msg = j.message || '失败';
+            this.err = true;
+          }
+        } catch (e) {
+          this.msg = String(e);
+          this.err = true;
+        } finally {
+          this.loading = false;
+        }
+      }
+    }
+  }).mount('#app');
+})();
+</script>
+</body>
+</html>
