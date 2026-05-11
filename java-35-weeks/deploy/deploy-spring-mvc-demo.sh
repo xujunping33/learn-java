@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 将 spring-mvc-demo 打成 war 并部署到本仓库 tools 下的 Tomcat。
-# 用法：在仓库根目录执行 ./deploy/deploy-spring-mvc-demo.sh
+# 将 spring-mvc-demo 打成 war 并部署到本路径 tools 下的 Tomcat。
+# 用法：在 java-35-weeks/ 下执行 ./deploy/deploy-spring-mvc-demo.sh；或在 Git 仓库根执行 ./java-35-weeks/deploy/deploy-spring-mvc-demo.sh
 # 环境变量：CATALINA_HOME（默认 $REPO_ROOT/tools/apache-tomcat-10.1.54）
 #           SKIP_BUILD=1  跳过 mvn，仅拷贝已有 target/spring-mvc-demo.war
 

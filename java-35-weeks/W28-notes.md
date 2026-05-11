@@ -61,8 +61,8 @@
 
 ## Day 194：CI（GitHub Actions）
 
-- **`.github/workflows/ci.yml`**：`ubuntu-latest` + **Temurin 21**；**`setup-java` Maven cache**（`cache-dependency-path: boot-social-demo/pom.xml`）；**`defaults.run.working-directory: boot-social-demo`**；**`mvn -B -ntp verify`**。
-- **触发**：`push` / `pull_request` 且路径含 **`boot-social-demo/**`**（或改 workflow）；**`workflow_dispatch`** 可手工跑。
+- **`.github/workflows/ci.yml`**：`ubuntu-latest` + **Temurin 21**；**`setup-java` Maven cache**（`cache-dependency-path: java-35-weeks/boot-social-demo/pom.xml`）；**`defaults.run.working-directory: java-35-weeks/boot-social-demo`**；**`mvn -B -ntp verify`**。
+- **触发**：`push` / `pull_request` 且路径含 **`java-35-weeks/boot-social-demo/**`**（或改 workflow）；**`workflow_dispatch`** 可手工跑。
 - GitHub 托管 runner 带 **Docker**，Testcontainers 可拉 **`mysql:8.0`**；若遇 Hub 限流可以后换镜像/registry。
 - **本机**：有 Docker 仍可能因 **Docker API 版本** 被拒（旧 TC 客户端）；**`pom.xml`** 覆盖 **`testcontainers.version`**（≥**1.21.4**）后 **`SocialFlowIT`** 应真实执行而非 skip。
 
@@ -87,7 +87,7 @@
 ## Day 190：全链路验证（备忘）
 
 ```bash
-cd boot-social-demo
+cd java-35-weeks/boot-social-demo
 mvn -q test
 docker compose up -d --build
 curl -sS http://127.0.0.1:8081/api/ping

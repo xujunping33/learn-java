@@ -140,7 +140,7 @@
 
 ## 一键复现（推荐）
 
-仓库根目录：
+在本路径根目录（`java-35-weeks/`，与 `deploy` 同级）：
 
 ```bash
 ./deploy/deploy-ssm-social-demo.sh

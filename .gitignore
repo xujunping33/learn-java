@@ -32,13 +32,13 @@ tools/apache-tomcat-*/
 tools/apache-tomcat-*.tar.gz
 
 # Day 138: local tar backups (keep deploy/backups/.gitkeep)
-deploy/backups/*.tar.gz
+java-35-weeks/deploy/backups/*.tar.gz
 
 # Redis local config (Day 139)
-redis/jedis-demo/src/main/resources/redis.properties
+java-35-weeks/redis/jedis-demo/src/main/resources/redis.properties
 
-oa-demo/src/main/resources/redis.properties
+java-35-weeks/oa-demo/src/main/resources/redis.properties
 
 # ssm-social-demo local DB config
-ssm-social-demo/src/main/resources/db.properties
+java-35-weeks/ssm-social-demo/src/main/resources/db.properties
 

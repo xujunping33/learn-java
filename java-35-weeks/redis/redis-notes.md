@@ -90,10 +90,10 @@ mvn -q exec:java
 
 ## 6. 与 `oa-demo` 联调（Day 140）
 
-**`oa-demo`** 在仓库根 **`learn/java`** 下，与 **`redis/`** 并列；若在 **`redis/`** 里执行复制，请用 **`../oa-demo/...`**，或先 **`cd ..`** 到仓库根。
+**`oa-demo`** 在本路径根 **`java-35-weeks/`** 下，与 **`redis/`** 并列；若在 **`redis/`** 里执行复制，请用 **`../oa-demo/...`**，或先 **`cd ..`** 到 **`java-35-weeks/`**。
 
 ```bash
-# 在仓库根 learn/java
+# 在 java-35-weeks/（Git 仓库根则先 cd java-35-weeks）
 cp oa-demo/src/main/resources/redis.properties.example oa-demo/src/main/resources/redis.properties
 # 编辑 oa-demo/src/main/resources/redis.properties：redis.enabled=true
 ```

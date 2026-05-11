@@ -58,7 +58,7 @@
 
 ## Day 240（周二）— Java 集合 & 并发（口述题 ×10）
 
-> 手写练习：`day240/ProducerConsumerBlockingQueueDemo.java`（阻塞队列版生产者消费者）。运行：`cd day240 && javac ProducerConsumerBlockingQueueDemo.java && java ProducerConsumerBlockingQueueDemo`
+> 手写练习：`day240/ProducerConsumerBlockingQueueDemo.java`（阻塞队列版生产者消费者）。运行（在 **`java-35-weeks/`** 下）：`cd day240 && javac ProducerConsumerBlockingQueueDemo.java && java ProducerConsumerBlockingQueueDemo`；若在 Git 仓库根目录，先 `cd java-35-weeks`。
 
 ### Q1：`HashMap` put 大致做什么？
 

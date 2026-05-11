@@ -11,6 +11,8 @@
 - **Rollback**: 回滚到上一个 tag/commit：`<sha>`；或 revert 本 PR。
 
 ## Test plan
+（以下命令在 **`java-35-weeks/boot-social-demo/`** 下执行，或在 Git 仓库根先 **`cd`** 进去。）
+
 - [ ] `mvn -q test`
 - [ ] `mvn -B -ntp verify`（含 `SocialFlowIT`，需要 Docker）
 - [ ] `docker compose up -d --build`

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 演示 tar：将 Tomcat logs 打成 .tar.gz 备份到 deploy/backups/（不删源目录）。
-# 用法：./deploy/backup-oa-tomcat-logs.sh
+# 用法：在 java-35-weeks/ 下执行 ./deploy/backup-oa-tomcat-logs.sh（或从 Git 仓库根：./java-35-weeks/deploy/backup-oa-tomcat-logs.sh）
 # 环境变量：CATALINA_HOME、OUT_DIR（默认 $REPO_ROOT/deploy/backups）
 
 set -euo pipefail

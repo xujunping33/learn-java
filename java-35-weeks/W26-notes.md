@@ -117,7 +117,7 @@
 
 ### 6.3 初始化脚本
 
-**`withInitScript("testcontainers-schema.sql")`** 在容器已创建的数据库上执行；脚本里 **不要** 再 **`CREATE DATABASE` / `USE`**，否则与容器内置库名/JDBC URL 容易打架。表结构可与仓库根 **`sql/ssm_social_schema.sql`** 对齐。
+**`withInitScript("testcontainers-schema.sql")`** 在容器已创建的数据库上执行；脚本里 **不要** 再 **`CREATE DATABASE` / `USE`**，否则与容器内置库名/JDBC URL 容易打架。表结构可与本路径下 **`sql/ssm_social_schema.sql`** 对齐。
 
 ### 6.4 无 Docker 的替代路线（计划中的 B）
 

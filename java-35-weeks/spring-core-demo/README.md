@@ -5,7 +5,7 @@
 ## 环境
 
 - **JDK 17+**、**Maven 3.6+**
-- **MySQL**，库名 **`learn_java`**，表 **`student`**（参见仓库根目录 **`sql/week8_schema.sql`**）
+- **MySQL**，库名 **`learn_java`**，表 **`student`**（参见与本工程同级目录下的 **`sql/week8_schema.sql`**）
 - **`src/main/resources/application.properties`**：配置 **`jdbc.url` / `jdbc.username` / `jdbc.password`**（可与本机一致）
 - Day149 审计演示需要 **`audit_log`**：执行 **`sql/w22_audit_log.sql`** 一次
 

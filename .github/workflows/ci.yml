@@ -4,11 +4,11 @@ name: CI
 on:
   push:
     paths:
-      - "boot-social-demo/**"
+      - "java-35-weeks/boot-social-demo/**"
       - ".github/workflows/ci.yml"
   pull_request:
     paths:
-      - "boot-social-demo/**"
+      - "java-35-weeks/boot-social-demo/**"
       - ".github/workflows/ci.yml"
   workflow_dispatch:
 
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: boot-social-demo
+        working-directory: java-35-weeks/boot-social-demo
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +30,7 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-          cache-dependency-path: boot-social-demo/pom.xml
+          cache-dependency-path: java-35-weeks/boot-social-demo/pom.xml
 
       - name: Maven verify (Surefire + Failsafe)
         run: mvn -B -ntp verify

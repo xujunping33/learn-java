@@ -139,4 +139,4 @@ docker compose exec redis redis-cli ping
 | `deploy/mysql/init.sql` | 首次初始化库表（仅新数据卷执行一次） |
 | `deploy/nginx/boot-social.conf` | **`upstream`**、`/` 反代、`/health`→`/actuator/health`、日志格式 |
 
-仓库根 **`sql/ssm_social_schema.sql`** 可作参考；Compose **Day192** 起以 **`deploy/mysql/init.sql`** 为准，避免依赖上级目录路径。
+与本工程同处 **`java-35-weeks/`** 下的 **`sql/ssm_social_schema.sql`** 可作参考；Compose **Day192** 起以 **`deploy/mysql/init.sql`** 为准，避免依赖上级目录路径。

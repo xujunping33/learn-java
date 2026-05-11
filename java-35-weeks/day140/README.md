@@ -15,9 +15,9 @@
 ## 启用步骤
 
 1. 本机 **Redis** 已启动（**`redis-cli ping`** → **PONG**），见 **`redis/redis-notes.md`**。  
-2. 复制 **`redis.properties.example`** → **`redis.properties`**（路径相对**仓库根** `learn/java`，不要在 **`redis/`** 子目录里用 **`oa-demo/...`**）：  
+2. 复制 **`redis.properties.example`** → **`redis.properties`**（路径相对本路径根 **`java-35-weeks/`**，不要在 **`redis/`** 子目录里用 **`oa-demo/...`**）：  
    - 在 **`oa-demo`** 目录：`cp src/main/resources/redis.properties.example src/main/resources/redis.properties`  
-   - 或在仓库根：`cp oa-demo/src/main/resources/redis.properties.example oa-demo/src/main/resources/redis.properties`  
+   - 或在 **`java-35-weeks/`** 根：`cp oa-demo/src/main/resources/redis.properties.example oa-demo/src/main/resources/redis.properties`  
    然后编辑 **`redis.properties`**，设 **`redis.enabled=true`**。  
 3. 打 **war**、部署 Tomcat，用 **`emp`** 登录后连续 **`GET /api/leaves/me`** 两次。  
 4. 看 **`logs/catalina.out`**：第一次 **MISS**，第二次 **HIT**（在 TTL 内）。  

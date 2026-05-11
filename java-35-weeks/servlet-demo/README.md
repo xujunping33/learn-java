@@ -7,7 +7,7 @@ Maven **`war`**，Tomcat **10.x**（Jakarta Servlet **6**）。
 | 项 | 说明 |
 |----|------|
 | **JDK** | **21**（`maven.compiler.release=21`） |
-| **Tomcat** | **10.1.54**（Jakarta EE 10）；本仓库解压路径示例：**`learn/java/tools/apache-tomcat-10.1.54/`**（见 **`day113/README.md`**） |
+| **Tomcat** | **10.1.54**（Jakarta EE 10）；解压路径示例：**`java-35-weeks/tools/apache-tomcat-10.1.54/`**（相对 Git 仓库根；在本路径根下则为 **`tools/apache-tomcat-10.1.54/`**，见 **`day113/README.md`**） |
 | **HTTP 端口** | **8080**（默认 **`conf/server.xml`** 的 **`<Connector port="8080">`**） |
 | **上下文路径** | **`/servlet-demo`**（与 **`servlet-demo.war`** 文件名一致） |
 | **应用根 URL** | **`http://127.0.0.1:8080/servlet-demo/`** |
@@ -23,7 +23,7 @@ mvn clean package
 
 ## 可重复部署（Day119，建议做两遍）
 
-Tomcat **先 `stop`**。在仓库根 **`learn/java/`**（与 **`tools/`** 同级）：
+Tomcat **先 `stop`**。在本路径根目录 **`java-35-weeks/`**（与 **`tools/`**、**`servlet-demo/`** 同级；若在 Git 仓库根则先 **`cd java-35-weeks`**）：
 
 ```bash
 export CATALINA_HOME="$PWD/tools/apache-tomcat-10.1.54"
@@ -64,7 +64,7 @@ jar tf target/servlet-demo.war | grep -E '^WEB-INF/(classes/|lib/)' | head -40
 
 **推荐**升级部署前先 **`stop`** 并删除旧 **`webapps/servlet-demo*`**（见上文 **「可重复部署（Day119）」**），避免混用旧 class。
 
-在仓库根目录 **`learn/java/`**（与 **`tools/`** 同级）执行：
+在本路径根目录 **`java-35-weeks/`**（与 **`tools/`** 同级）执行：
 
 ```bash
 export CATALINA_HOME="$PWD/tools/apache-tomcat-10.1.54"

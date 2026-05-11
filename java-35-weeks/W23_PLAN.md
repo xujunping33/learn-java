@@ -183,7 +183,7 @@
 
 ## 现在开始：Day 155
 
-1. 在仓库根目录旁新建 `spring-mvc-demo`，`packaging` 为 `war`。  
+1. 在本路径根目录（与 `servlet-demo` 同级）新建 `spring-mvc-demo`，`packaging` 为 `war`。  
 2. 加入：`spring-webmvc`、`jackson-databind`、`jakarta.servlet-api`（`provided`）。  
 3. 按上面实现 `WebAppInitializer`、`WebConfig`、`PingController`。  
 4. `mvn -q package` 后部署 WAR，`curl` 通 `/api/ping`。
