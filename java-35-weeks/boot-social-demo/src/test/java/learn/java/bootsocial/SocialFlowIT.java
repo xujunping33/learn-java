@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 import java.util.UUID;
-import learn.java.bootsocial.config.AppProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +25,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * Day 182：Testcontainers MySQL + 薄 HTTP 主链路（注册 → 发帖 → 列表命中）。
  *
  * <p>由 Failsafe 在 {@code mvn verify} 中执行；需本机 Docker。无 Docker 时类级规则会跳过（不失败）。
+ *
+ * <p>鉴权形态与 Sa-Token 配置一致：<strong>不写 cookie</strong>（{@code sa-token.is-read-cookie=false}），
+ * 成功后从 JSON 中取 token，请求头使用 {@code Authorization: Bearer …}。
  */
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -57,9 +58,6 @@ class SocialFlowIT {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
-    AppProperties appProperties;
-
     @Test
     void registerThenCreatePostThenListContainsPost() throws Exception {
         String base = "http://127.0.0.1:" + port;
@@ -76,15 +74,15 @@ class SocialFlowIT {
         ResponseEntity<String> reg =
                 rt.postForEntity(base + "/api/auth/register", new HttpEntity<>(regBody, json), String.class);
         assertThat(reg.getStatusCode().value()).isEqualTo(200);
-        String cookie = sessionCookieHeader(reg, appProperties.getSession().getCookieName());
-        assertThat(cookie).isNotBlank();
 
         JsonNode regJson = objectMapper.readTree(reg.getBody());
         assertThat(regJson.path("ok").asBoolean()).isTrue();
+        JsonNode data = regJson.path("data");
+        assertThat(data.path("tokenValue").asText()).isNotBlank();
 
         HttpHeaders authed = new HttpHeaders();
         authed.setContentType(MediaType.APPLICATION_JSON);
-        authed.add(HttpHeaders.COOKIE, cookie);
+        authed.setBearerAuth(data.path("tokenValue").asText());
 
         String postBody = "{\"title\":\"" + title + "\",\"content\":\"integration body\"}";
         ResponseEntity<String> postResp =
@@ -109,21 +107,5 @@ class SocialFlowIT {
             }
         }
         assertThat(found).as("list should contain created post id=%s title=%s", postId, title).isTrue();
-    }
-
-    private static String sessionCookieHeader(ResponseEntity<String> response, String cookieName) {
-        List<String> setCookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
-        assertThat(setCookies).as("Set-Cookie present").isNotNull();
-        String prefix = cookieName + "=";
-        for (String raw : setCookies) {
-            if (raw == null) {
-                continue;
-            }
-            String first = raw.split(";", 2)[0].trim();
-            if (first.startsWith(prefix)) {
-                return first;
-            }
-        }
-        throw new IllegalStateException("No " + cookieName + " in Set-Cookie: " + setCookies);
     }
 }
